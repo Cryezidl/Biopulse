@@ -1,0 +1,7 @@
+{
+  "name": "Biopulse.EditMode.Tests",
+  "rootNamespace": "Biopulse.Tests",
+  "references": ["Biopulse.Core"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

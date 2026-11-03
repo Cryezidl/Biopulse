@@ -1,0 +1,6 @@
+{
+  "name": "Biopulse.Editor",
+  "rootNamespace": "Biopulse",
+  "references": ["Biopulse.Core", "Biopulse.Runtime"],
+  "includePlatforms": ["Editor"]
+}

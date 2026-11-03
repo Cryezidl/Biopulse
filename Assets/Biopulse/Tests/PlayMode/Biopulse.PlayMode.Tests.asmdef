@@ -1,0 +1,6 @@
+{
+  "name": "Biopulse.PlayMode.Tests",
+  "rootNamespace": "Biopulse.Tests",
+  "references": ["Biopulse.Core", "Biopulse.Runtime"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

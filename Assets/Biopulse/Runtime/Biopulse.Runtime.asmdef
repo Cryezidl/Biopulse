@@ -1,0 +1,5 @@
+{
+  "name": "Biopulse.Runtime",
+  "rootNamespace": "Biopulse",
+  "references": ["Biopulse.Core", "Unity.InputSystem"]
+}

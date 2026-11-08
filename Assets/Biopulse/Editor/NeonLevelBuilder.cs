@@ -24,8 +24,19 @@ namespace Biopulse.EditorTools
         // Tokens: run N | low | mid | high | laser | pit N | rail N | cp | term | exit
         public enum PitStyle { Goo, Electric, Void }
 
+        // One painted backdrop strip (rendered by ArtSource/Blender). Pivot is bottom-centre at world Y = Bottom.
+        public sealed class Layer
+        {
+            public string File; public float Ppu = 80, Factor = .5f, FactorY = .3f, Bottom; public int Order;
+            public Color Tint = Color.white; public bool AnchorTop; public float TopInset;
+            public Layer(string file, float ppu, float factor, float factorY, float bottom, int order)
+            { File = file; Ppu = ppu; Factor = factor; FactorY = factorY; Bottom = bottom; Order = order; }
+        }
+
         public sealed class Theme
         {
+            public Layer[] Layers;   // when set, replaces the legacy Far/Mid pair
+            public string Floor = "Floor_Lab.png", Wall;   // floor strip (4x2, top at y=0) and optional tiled wall below it
             public string Far, Mid;
             public float FarPpu = 100, MidPpu = 80, FarFactor = .6f, MidFactor = .3f, FarY = 3.6f, MidY = 3.4f;
             public Color FarTint, MidTint, Edge, Accent, Goo, Ambient, Sky, SkyGlow;
@@ -44,31 +55,50 @@ namespace Biopulse.EditorTools
 
         public static readonly Theme Underground = new Theme
         {
+            Layers = new[]
+            {
+                new Layer("Lab_Back.png", 64, .78f, .5f, -1f, -100),
+                new Layer("Lab_Mid.png", 80, .5f, .3f, -1f, -50),
+                new Layer("Lab_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.4f },
+            },
             Far = "Lab_Far.png", Mid = "Lab_Mid.png",
             FarTint = new Color(.36f, .42f, .5f), MidTint = new Color(.75f, .8f, .9f),
             Edge = new Color(.2f, .95f, 1f), Accent = new Color(.3f, 1f, .5f), Goo = new Color(.35f, 1f, .4f),
             Ambient = new Color(.6f, .72f, .95f), Sky = new Color(.02f, .035f, .05f), SkyGlow = new Color(.05f, .3f, .2f, .5f),
-            AmbientIntensity = .85f
+            AmbientIntensity = .85f, Floor = "Floor_Lab.png"
         };
 
         public static readonly Theme SurfaceLab = new Theme
         {
+            Layers = new[]
+            {
+                new Layer("Lab2_Back.png", 64, .78f, .5f, -1f, -100),
+                new Layer("Lab2_Mid.png", 80, .5f, .3f, -1f, -50),
+                new Layer("Lab2_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.4f },
+            },
             Far = "Lab2_Far.png", Mid = "Lab2_Mid.png",
             FarTint = new Color(.4f, .41f, .5f), MidTint = new Color(.85f, .85f, .95f),
             Edge = new Color(1f, .32f, .42f), Accent = new Color(1f, .25f, .2f), Goo = new Color(.35f, .7f, 1f),
             Ambient = new Color(.85f, .82f, .95f), Sky = new Color(.035f, .03f, .05f), SkyGlow = new Color(.4f, .05f, .08f, .45f),
-            FloorTint = new Color(1f, .95f, .97f), Underfloor = new Color(.06f, .05f, .07f),
-            AmbientIntensity = .95f, Pit = PitStyle.Electric
+            Underfloor = new Color(.05f, .045f, .06f),
+            AmbientIntensity = .95f, Pit = PitStyle.Electric, Floor = "Floor_Office.png"
         };
 
         public static readonly Theme Rooftops = new Theme
         {
+            Layers = new[]
+            {
+                new Layer("Roof_Sky.png", 48, .97f, 1f, -4f, -130),
+                new Layer("Roof_Far.png", 80, .82f, .55f, -2f, -100),
+                new Layer("Roof_Mid.png", 80, .55f, .3f, -2.5f, -50),
+                new Layer("Roof_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.2f },
+            },
             Far = "Roof_Far.png", Mid = "Roof_Mid.png", FarPpu = 80, FarFactor = .85f, MidFactor = .5f, FarY = 3.2f, MidY = 3.0f,
             FarTint = new Color(.8f, .72f, .95f), MidTint = new Color(.9f, .82f, 1f),
             Edge = new Color(1f, .35f, .8f), Accent = new Color(1f, .6f, .2f), Goo = new Color(1f, .35f, .8f),
             Ambient = new Color(.8f, .65f, 1f), Sky = new Color(.03f, .015f, .08f), SkyGlow = new Color(.75f, .18f, .4f, .75f),
-            FloorTint = new Color(.75f, .65f, .9f), CrateTint = new Color(.9f, .8f, 1f), Underfloor = new Color(.07f, .045f, .11f),
-            AmbientIntensity = .9f, Ceiling = false, Pit = PitStyle.Void
+            CrateTint = new Color(.92f, .86f, 1f), Underfloor = new Color(.07f, .045f, .11f),
+            AmbientIntensity = .9f, Ceiling = false, Pit = PitStyle.Void, Floor = "Floor_Roof.png", Wall = "Wall_Roof.png"
         };
 
         public static readonly LevelDef[] Levels =
@@ -130,12 +160,14 @@ namespace Biopulse.EditorTools
             Ceiling(c, -30, 30);
             Backdrop(c, -30, 30);
             AmbientLights(c, -16, 16);
-            var hero = Sprite(null, "Hero", character, new Vector2(5.2f, 0), Vector2.one * 1.6f, Color.white, 10, unlit);
+            var hero = Sprite(null, "Hero", heroIdle[0], new Vector2(5.2f, 0), Vector2.one * 1.5f, Color.white, 10, unlit);
+            var idle = hero.gameObject.AddComponent<NeonFlipbook>(); idle.Frames = heroIdle; idle.Fps = 6;
             var heroLight = new GameObject("Hero light").AddComponent<Light2D>(); heroLight.transform.position = new Vector3(5.2f, 1.6f);
             heroLight.lightType = Light2D.LightType.Point; heroLight.pointLightOuterRadius = 4; heroLight.intensity = 1; heroLight.color = NeonPalette.Flex;
             var bot = new GameObject("MOP-3000").transform; bot.position = new Vector3(1.6f, 2.9f);
             Sprite(bot, "Body", botBody, Vector2.zero, Vector2.one * 1.1f, Color.white, 9, unlit);
-            Sprite(bot, "Mop", botMop, new Vector2(.78f, -.25f) * 1.1f, Vector2.one * 1.1f, Color.white, 8, unlit);
+            Sprite(bot, "Mop", botMop, new Vector2(.66f, -.26f) * 1.1f, Vector2.one * 1.1f, Color.white, 8, unlit);
+            Sprite(bot, "Eye", botEye, new Vector2(.3f, .12f) * 1.1f, Vector2.one * 1.1f, NeonPalette.Gold, 10, unlit);
             var botLight = new GameObject("Bot light").AddComponent<Light2D>(); botLight.transform.SetParent(bot, false);
             botLight.lightType = Light2D.LightType.Point; botLight.pointLightOuterRadius = 3.5f; botLight.intensity = 1; botLight.color = NeonPalette.Gold;
             Sprite(null, "Crates", crate, new Vector2(8.2f, 0), Vector2.one, c.T.CrateTint, 3, lit);
@@ -161,8 +193,20 @@ namespace Biopulse.EditorTools
         // ---------- assets ----------
         private static Material unlit, lit;
         private static PhysicsMaterial2D slick;
-        private static Sprite white, dot, softDot, ring, gradient, crate, floor, terminal, gate, botBody, botMop, character;
+        private static Sprite white, dot, softDot, ring, gradient, crate, crate2, terminal, gate, botBody, botMop, character,
+            anchor, emitter, drone, beacon, exitDoor, botEye;
         private static Font font;
+        private static Sprite[] heroRun, heroIdle;
+        private static Sprite heroRise, heroApex, heroFall, heroLand, heroHang, heroSwingF, heroSwingB, heroReach, heroDeath;
+        private const string HeroArt = Art + "/Hero";
+
+        private static Sprite Hero(string name) => Import($"{HeroArt}/{name}.png", 160, new Vector2(.5f, .3f / 2.4f));
+        private static Sprite[] HeroSeq(string prefix, int count)
+        {
+            var list = new Sprite[count];
+            for (int i = 0; i < count; i++) list[i] = Hero($"{prefix}_{i:00}");
+            return list;
+        }
         private static VolumeProfile post;
 
         private static void PrepareAssets()
@@ -181,12 +225,23 @@ namespace Biopulse.EditorTools
             ring = Import($"{Generated}/Ring.png", 128, new Vector2(.5f, .5f));
             gradient = Import($"{Generated}/Gradient.png", 64, new Vector2(.5f, .5f));
             crate = Import($"{Sprites}/Crate.png", 200, new Vector2(.5f, .05f / .9f));
-            floor = Import($"{Sprites}/FloorBlock.png", 200, new Vector2(.5f, 1f), true);
+            crate2 = Import($"{Sprites}/Crate2.png", 200, new Vector2(.5f, .05f / .9f));
+            anchor = Import($"{Sprites}/Anchor.png", 200, new Vector2(.5f, .5f));
+            emitter = Import($"{Sprites}/Emitter.png", 200, new Vector2(.5f, .5f));
+            drone = Import($"{Sprites}/Drone.png", 200, new Vector2(.5f, .5f));
+            beacon = Import($"{Sprites}/Beacon.png", 200, new Vector2(.5f, .05f / 2.6f));
+            exitDoor = Import($"{Sprites}/ExitDoor.png", 150, new Vector2(.5f, .1f / 4.6f));
+            floors.Clear();
             terminal = Import($"{Sprites}/Terminal.png", 200, new Vector2(.5f, .1f / 1.9f));
             gate = Import($"{Sprites}/Gate.png", 200, new Vector2(.5f, .1f / 4f));
             botBody = Import($"{Sprites}/Mop3000_Body.png", 220, new Vector2(.5f, .5f));
             botMop = Import($"{Sprites}/Mop3000_Mop.png", 220, new Vector2(.5f, .5f));
+            botEye = Import($"{Sprites}/Mop3000_Eye.png", 220, new Vector2(.5f, .5f));
             character = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Biopulse/Art/Laboratory/MainCharacter.png");
+            heroRun = HeroSeq("run", 10); heroIdle = HeroSeq("idle", 6);
+            heroRise = Hero("rise_00"); heroApex = Hero("apex_00"); heroFall = Hero("fall_00"); heroLand = Hero("land_00");
+            heroHang = Hero("hang_00"); heroSwingF = Hero("swingf_00"); heroSwingB = Hero("swingb_00");
+            heroReach = Hero("reach_00"); heroDeath = Hero("death_00");
             font = AssetDatabase.LoadAssetAtPath<Font>($"{Art}/Fonts/RussoOne-Regular.ttf");
 
             const string urp = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/";
@@ -232,7 +287,8 @@ namespace Biopulse.EditorTools
             ti.spriteImportMode = SpriteImportMode.Single;
             ti.spritePixelsPerUnit = ppu;
             ti.mipmapEnabled = false; ti.alphaIsTransparency = true;
-            ti.textureCompression = TextureImporterCompression.Uncompressed;
+            ti.maxTextureSize = 4096;
+            ti.textureCompression = TextureImporterCompression.CompressedHQ;
             var s = new TextureImporterSettings(); ti.ReadTextureSettings(s);
             s.spriteAlignment = (int)SpriteAlignment.Custom; s.spritePivot = pivot;
             s.spriteMeshType = SpriteMeshType.FullRect;
@@ -342,7 +398,7 @@ namespace Biopulse.EditorTools
             float x = start + 4.2f;
             var root = new GameObject($"Crates x{stack}").transform; root.SetParent(c.World); root.position = new Vector3(x, 0);
             for (int i = 0; i < stack; i++)
-                Sprite(root, "Crate", crate, new Vector2(0, i * .8f), Vector2.one, c.T.CrateTint, 3, lit);
+                Sprite(root, "Crate", ((int)x + i) % 2 == 0 ? crate : crate2, new Vector2(0, i * .8f), Vector2.one, c.T.CrateTint, 3, lit);
             var col = root.gameObject.AddComponent<BoxCollider2D>();
             col.size = new Vector2(.8f, .8f * stack); col.offset = new Vector2(0, .4f * stack); col.sharedMaterial = slick;
             Zone(c, start + .4f, x + 1.4f, kind, hint, false, x);
@@ -360,15 +416,15 @@ namespace Biopulse.EditorTools
             foreach (float side in new[] { -half, half })
             {
                 if (c.T.Ceiling)
-                    Sprite(root, "Emitter pylon", white, new Vector2(side, beamY + 2.6f), new Vector2(.35f, 5f), new Color(.08f, .09f, .13f), 2, lit);
+                {
+                    Sprite(root, "Emitter pylon", white, new Vector2(side, beamY + 2.75f), new Vector2(.16f, 5f), new Color(.1f, .1f, .15f), 2, unlit);
+                    Sprite(root, "Emitter", emitter, new Vector2(side, beamY), Vector2.one, Color.white, 4, unlit);
+                }
                 else
                 {   // open sky: the emitters are little hovering drones
-                    Sprite(root, "Drone rotor", white, new Vector2(side, beamY + .42f), new Vector2(.9f, .06f), new Color(.6f, .6f, .7f), 3, unlit)
-                        .gameObject.AddComponent<NeonPulse>().Speed = 40;
-                    Sprite(root, "Drone mast", white, new Vector2(side, beamY + .3f), new Vector2(.06f, .25f), new Color(.2f, .22f, .3f), 3, lit);
+                    Sprite(root, "Drone", drone, new Vector2(side, beamY + .02f), Vector2.one, Color.white, 4, unlit)
+                        .gameObject.AddComponent<NeonBob>();
                 }
-                Sprite(root, "Emitter head", white, new Vector2(side, beamY + .05f), new Vector2(.55f, .35f), new Color(.2f, .22f, .3f), 3, lit);
-                Sprite(root, "Emitter eye", dot, new Vector2(side, beamY), new Vector2(.3f, .3f), new Color(1, .3f, .25f), 6, unlit);
             }
             var beam = Sprite(root, "Beam", white, new Vector2(0, beamY), new Vector2(half * 2, .09f), new Color(1, .2f, .15f), 6, unlit);
             beam.gameObject.AddComponent<NeonPulse>().Speed = 22;
@@ -407,11 +463,12 @@ namespace Biopulse.EditorTools
                 float gx = span * (k + .5f);
                 const float hookY = 4.6f;
                 var point = new GameObject($"Hook {k + 1}").transform; point.SetParent(root, false); point.localPosition = new Vector3(gx, hookY);
-                Sprite(root, "Hook cable", white, new Vector2(gx, hookY + 3f), new Vector2(.04f, 6f), new Color(.4f, .45f, .55f, .8f), 4, lit);
+                Sprite(root, "Hook cable", white, new Vector2(gx, hookY + 3.4f), new Vector2(.05f, 6f), new Color(.05f, .05f, .08f), 4, unlit);
                 var target = point.gameObject.AddComponent<GrabTarget>(); target.StableId = $"L{c.Def.Number}/hook@{a + gx:F1}";
                 var gp = point.gameObject.AddComponent<NeonGrabPoint>(); gp.MaxReach = 6;
                 gp.Halo = Sprite(point, "Halo", softDot, Vector2.zero, Vector2.one * 2f, NeonPalette.Alpha(NeonPalette.Flex, .3f), 6, unlit);
-                gp.Core = Sprite(point, "Core", ring, Vector2.zero, Vector2.one * .6f, NeonPalette.Flex, 7, unlit);
+                Sprite(point, "Anchor", anchor, Vector2.zero, Vector2.one, Color.white, 6, unlit);
+                gp.Core = Sprite(point, "Core", ring, Vector2.zero, Vector2.one * .46f, NeonPalette.Flex, 7, unlit);
                 Sprite(point, "Handle", dot, Vector2.zero, Vector2.one * .26f, Color.white, 8, unlit);
                 PointLight(c, new Vector2(a + gx, hookY), NeonPalette.Flex, 4f, 1f);
             }
@@ -424,9 +481,8 @@ namespace Biopulse.EditorTools
             Ground(c, c.X, c.X + 5, false);
             float x = c.X + 2.5f;
             var root = new GameObject("Checkpoint").transform; root.SetParent(c.World); root.position = new Vector3(x, 0);
-            Sprite(root, "Base", white, new Vector2(0, .08f), new Vector2(.7f, .16f), new Color(.2f, .24f, .32f), 3, lit);
-            Sprite(root, "Pole", white, new Vector2(0, 1.1f), new Vector2(.07f, 2.1f), new Color(.5f, .55f, .65f), 3, lit);
-            var beacon = Sprite(root, "Beacon", dot, new Vector2(0, 2.25f), Vector2.one * .38f, c.T.Edge, 6, unlit);
+            Sprite(root, "Post", NeonLevelBuilder.beacon, Vector2.zero, Vector2.one, Color.white, 3, unlit);
+            var beacon = Sprite(root, "Beacon", dot, new Vector2(0, 2.25f), Vector2.one * .3f, c.T.Edge, 6, unlit);
             Sprite(root, "Beacon halo", softDot, new Vector2(0, 2.25f), Vector2.one * 1.6f, NeonPalette.Alpha(c.T.Edge, .35f), 5, unlit);
             var light = PointLight(c, new Vector2(x, 2.2f), c.T.Edge, 4.5f, 1.1f);
             var col = root.gameObject.AddComponent<BoxCollider2D>(); col.isTrigger = true; col.size = new Vector2(1, 6); col.offset = new Vector2(0, 3);
@@ -441,14 +497,14 @@ namespace Biopulse.EditorTools
             float tx = start + 3.4f, gx = tx + 2.6f;
             var root = new GameObject("C+P Terminal").transform; root.SetParent(c.World); root.position = new Vector3(tx, 0);
             Sprite(root, "Console", terminal, Vector2.zero, Vector2.one, Color.white, 4, lit);
-            var screen = Sprite(root, "Screen glow", white, new Vector2(.02f, 1.31f), new Vector2(.82f, .44f), NeonPalette.Combo, 5, unlit);
-            screen.transform.localRotation = Quaternion.Euler(0, 0, 8);
+            var screen = Sprite(root, "Screen glow", white, new Vector2(.03f, 1.3f), new Vector2(.84f, .4f), NeonPalette.Combo, 5, unlit);
+            screen.transform.localRotation = Quaternion.Euler(0, 0, -4.4f);
             var zone = new GameObject("Activation zone").AddComponent<BoxCollider2D>(); zone.transform.SetParent(root, false);
             zone.isTrigger = true; zone.offset = new Vector2(.7f, 1); zone.size = new Vector2(1.6f, 2);
             var gateGo = new GameObject("Security gate"); gateGo.transform.SetParent(root, false); gateGo.transform.localPosition = new Vector3(gx - tx, 0);
             var gateSprite = gateGo.AddComponent<SpriteRenderer>(); gateSprite.sprite = gate; gateSprite.sortingOrder = 4; gateSprite.sharedMaterial = lit;
             var gateCol = gateGo.AddComponent<BoxCollider2D>(); gateCol.size = new Vector2(.6f, 3.8f); gateCol.offset = new Vector2(0, 1.9f); gateCol.sharedMaterial = slick;
-            Sprite(root, "Gate lintel", white, new Vector2(gx - tx, 4.0f), new Vector2(1.4f, .25f), new Color(.15f, .17f, .24f), 3, lit);
+            Sprite(root, "Gate lintel", white, new Vector2(gx - tx, 4.0f), new Vector2(1.4f, .25f), new Color(.1f, .1f, .15f), 3, unlit);
             var terminal_ = root.gameObject.AddComponent<LockTerminal>(); terminal_.Configure(zone, gateCol, null);
             var vis = root.gameObject.AddComponent<NeonTerminalVisual>(); vis.Terminal = terminal_; vis.Screen = screen;
             vis.Glow = PointLight(c, new Vector2(tx, 1.6f), NeonPalette.Combo, 5f, 1.4f);
@@ -463,10 +519,7 @@ namespace Biopulse.EditorTools
             var root = new GameObject("Exit").transform; root.SetParent(c.World); root.position = new Vector3(x, 0);
             Sprite(root, "Door light", white, new Vector2(0, 1.6f), new Vector2(1.8f, 3.2f), NeonPalette.Alpha(NeonPalette.Success, .85f), 2, unlit);
             Sprite(root, "Door haze", softDot, new Vector2(0, 1.6f), new Vector2(6, 6), NeonPalette.Alpha(NeonPalette.Success, .3f), 1, unlit);
-            foreach (float s in new[] { -1.1f, 1.1f })
-                Sprite(root, "Door frame", white, new Vector2(s, 1.8f), new Vector2(.4f, 3.6f), new Color(.14f, .16f, .22f), 3, lit);
-            Sprite(root, "Door lintel", white, new Vector2(0, 3.7f), new Vector2(2.6f, .4f), new Color(.14f, .16f, .22f), 3, lit);
-            Sprite(root, "Exit sign", white, new Vector2(0, 4.25f), new Vector2(1.4f, .35f), NeonPalette.Success, 4, unlit).gameObject.AddComponent<NeonPulse>();
+            Sprite(root, "Door frame", exitDoor, Vector2.zero, Vector2.one, Color.white, 3, unlit);
             PointLight(c, new Vector2(x, 2), NeonPalette.Success, 7, 1.6f);
             var col = root.gameObject.AddComponent<BoxCollider2D>(); col.isTrigger = true; col.size = new Vector2(.6f, 6); col.offset = new Vector2(0, 3);
             root.gameObject.AddComponent<NeonFinish>();
@@ -481,10 +534,22 @@ namespace Biopulse.EditorTools
             root.position = new Vector3((a + b) / 2, 0);
             var col = root.gameObject.AddComponent<BoxCollider2D>();
             col.size = new Vector2(b - a, 10); col.offset = new Vector2(0, -5); col.sharedMaterial = slick;
-            var top = Sprite(root, "Floor", floor, Vector2.zero, Vector2.one, c.T.FloorTint, 1, lit);
-            top.drawMode = SpriteDrawMode.Tiled; top.size = new Vector2(b - a, 1.25f);
-            Sprite(root, "Underfloor", white, new Vector2(0, -6.2f), new Vector2(b - a, 10), c.T.Underfloor, 0, unlit);
-            Sprite(root, "Edge glow", white, new Vector2(0, -.03f), new Vector2(b - a, .05f), c.T.Edge * new Color(1, 1, 1, .85f), 2, unlit);
+            var top = Sprite(root, "Floor", FloorSprite(c.T.Floor), Vector2.zero, Vector2.one, c.T.FloorTint, 1, unlit);
+            top.drawMode = SpriteDrawMode.Tiled; top.size = new Vector2(b - a, 2f);
+            if (c.T.Wall != null)
+            {
+                var wall = Sprite(root, "Wall", FloorSprite(c.T.Wall, 80), new Vector2(0, -1.9f), Vector2.one, new Color(.5f, .45f, .55f), 0, unlit);
+                wall.drawMode = SpriteDrawMode.Tiled; wall.size = new Vector2(b - a, 12);
+            }
+            else Sprite(root, "Underfloor", white, new Vector2(0, -6.9f), new Vector2(b - a, 10), c.T.Underfloor, 0, unlit);
+            Sprite(root, "Edge glow", white, new Vector2(0, 0f), new Vector2(b - a, .04f), c.T.Edge * new Color(1, 1, 1, .7f), 2, unlit);
+        }
+
+        private static readonly Dictionary<string, Sprite> floors = new Dictionary<string, Sprite>();
+        private static Sprite FloorSprite(string file, float ppu = 160)
+        {
+            if (floors.TryGetValue(file, out var s) && s != null) return s;
+            return floors[file] = Import($"{Sprites}/{file}", ppu, new Vector2(.5f, 1f), true);
         }
 
         private static void Goo(Ctx c, float a, float b)
@@ -509,10 +574,9 @@ namespace Biopulse.EditorTools
             }
             bool electric = c.T.Pit == PitStyle.Electric;
             var root = new GameObject($"{(electric ? "Electric" : "Toxic")} pit {a:F0}").transform; root.SetParent(c.Hazards); root.position = new Vector3((a + b) / 2, 0);
-            Sprite(root, "Pit wall", white, new Vector2(0, -2.5f), new Vector2(w, 5), new Color(.02f, .03f, .03f), 0, unlit);
-            Sprite(root, "Pit body", white, new Vector2(0, -6.5f), new Vector2(w, 10), c.T.Goo * new Color(.3f, .4f, .45f), 1, unlit);
-            var surface = Sprite(root, "Pit surface", white, new Vector2(0, -1.45f), new Vector2(w, electric ? .07f : .12f), c.T.Goo, 2, unlit);
-            var pulse = surface.gameObject.AddComponent<NeonPulse>(); pulse.Speed = electric ? 30 : 3; pulse.Flicker = electric;
+            var vat = Sprite(root, "Vat", FloorSprite(electric ? "Pit_Electric.png" : "Pit_Toxic.png", 120), Vector2.zero, Vector2.one, Color.white, 0, unlit);
+            vat.drawMode = SpriteDrawMode.Tiled; vat.size = new Vector2(w, 4.3f);
+            Sprite(root, "Vat depth", white, new Vector2(0, -9.3f), new Vector2(w, 10), electric ? new Color(.02f, .05f, .16f) : new Color(.04f, .16f, .06f), 0, unlit);
             if (electric)
                 for (int i = 0; i < 3; i++)
                 {
@@ -544,6 +608,7 @@ namespace Biopulse.EditorTools
 
         private static void Backdrop(Ctx c, float a, float b)
         {
+            if (c.T.Layers != null) { PaintedBackdrop(c, a, b); return; }
             var bg = Child("Backdrop", c.Deco);
             var far = Import($"{Sprites}/{c.T.Far}", c.T.FarPpu, new Vector2(.5f, .5f), true);
             var mid = Import($"{Sprites}/{c.T.Mid}", c.T.MidPpu, new Vector2(.5f, .5f), true);
@@ -559,6 +624,27 @@ namespace Biopulse.EditorTools
             var midR = Sprite(bg, "Mid layer", mid, new Vector2((a + b) / 2, c.T.MidY), Vector2.one, c.T.MidTint, -50, unlit);
             midR.drawMode = SpriteDrawMode.Tiled; midR.size = new Vector2(b - a + 40, 12);
             midR.gameObject.AddComponent<NeonParallax>().Factor = c.T.MidFactor;
+            Sprite(bg, "Floor fog", softDot, new Vector2((a + b) / 2, .2f), new Vector2(b - a + 40, 2.2f), NeonPalette.Alpha(c.T.Accent, .07f), -40, unlit);
+        }
+
+        private static void PaintedBackdrop(Ctx c, float a, float b)
+        {
+            var bg = Child("Backdrop", c.Deco);
+            foreach (var l in c.T.Layers)
+            {
+                var sprite = Import($"{Sprites}/{l.File}", l.Ppu, new Vector2(.5f, 0), true);
+                if (sprite == null) { Debug.LogWarning("Missing backdrop " + l.File); continue; }
+                float h = sprite.rect.height / l.Ppu;
+                // Enough strip to cover the level as seen through this layer's parallax, plus margins.
+                float span = (b - a) * Mathf.Max(.2f, Mathf.Abs(1 - l.Factor)) + 80;
+                // Top-anchored bands start where the game camera will hold them (feet ~26% up a 6.4-size view).
+                float bottom = l.AnchorTop ? 3.1f + 6.4f - l.TopInset : l.Bottom;
+                var r = Sprite(bg, l.File.Replace(".png", ""), sprite, new Vector2((a + b) / 2 * (1 - l.Factor) + 6 * l.Factor, bottom),
+                    Vector2.one, l.Tint, l.Order, unlit);
+                r.drawMode = SpriteDrawMode.Tiled; r.tileMode = SpriteTileMode.Continuous; r.size = new Vector2(span, h);
+                var p = r.gameObject.AddComponent<NeonParallax>(); p.Factor = l.Factor; p.FactorY = l.FactorY;
+                p.AnchorTop = l.AnchorTop; p.TopInset = l.TopInset;
+            }
             Sprite(bg, "Floor fog", softDot, new Vector2((a + b) / 2, .2f), new Vector2(b - a + 40, 2.2f), NeonPalette.Alpha(c.T.Accent, .07f), -40, unlit);
         }
 
@@ -590,7 +676,7 @@ namespace Biopulse.EditorTools
             var pivot = new GameObject("Pivot").transform; pivot.SetParent(go.transform, false); pivot.localPosition = Vector3.zero;
             var feet = new GameObject("Feet").transform; feet.SetParent(go.transform, false); feet.localPosition = new Vector3(0, -.8f);
             pivot.SetParent(feet, false);
-            var bodySprite = Sprite(pivot, "Body", character, Vector2.zero, Vector2.one * 1.05f, Color.white, 10, unlit);
+            var bodySprite = Sprite(pivot, "Body", heroIdle[0], Vector2.zero, Vector2.one, Color.white, 10, unlit);
 
             var glow = new GameObject("Rim light").AddComponent<Light2D>(); glow.transform.SetParent(go.transform, false);
             glow.lightType = Light2D.LightType.Point; glow.pointLightOuterRadius = 3; glow.pointLightInnerRadius = 0; glow.intensity = .7f; glow.color = NeonPalette.Flex;
@@ -623,6 +709,11 @@ namespace Biopulse.EditorTools
 
             visuals = go.AddComponent<NeonRunnerVisuals>();
             visuals.Motor = motor; visuals.Grab = grab; visuals.Body = bodySprite; visuals.Pivot = pivot; visuals.Trail = trail;
+            var anim = go.AddComponent<NeonHeroAnimator>();
+            anim.Motor = motor; anim.Grab = grab; anim.Visuals = visuals; anim.Body = bodySprite;
+            anim.Run = heroRun; anim.Idle = heroIdle; anim.Rise = heroRise; anim.Apex = heroApex; anim.Fall = heroFall;
+            anim.Land = heroLand; anim.Hang = heroHang; anim.SwingForward = heroSwingF; anim.SwingBack = heroSwingB;
+            anim.Reach = heroReach; anim.Death = heroDeath;
             return motor;
         }
 
@@ -632,11 +723,12 @@ namespace Biopulse.EditorTools
             var visual = new GameObject("Visual").transform; visual.SetParent(go.transform, false);
             Sprite(visual, "Body", botBody, Vector2.zero, Vector2.one * .85f, Color.white, 9, unlit);
             var mop = new GameObject("Mop pivot").transform; mop.SetParent(visual, false);
-            mop.localPosition = new Vector3(.78f, .80f - 1.05f, 0) * .85f;
+            mop.localPosition = new Vector3(.66f, -.26f, 0) * .85f;
             Sprite(mop, "Mop", botMop, Vector2.zero, Vector2.one * .85f, Color.white, 8, unlit);
+            var eye = Sprite(visual, "Eye", botEye, new Vector2(.3f, .12f) * .85f, Vector2.one * .85f, NeonPalette.Gold, 10, unlit);
             var light = new GameObject("Glow").AddComponent<Light2D>(); light.transform.SetParent(visual, false);
             light.lightType = Light2D.LightType.Point; light.pointLightOuterRadius = 3.5f; light.intensity = .9f; light.color = NeonPalette.Gold;
-            var ch = go.AddComponent<NeonChaser>(); ch.Runner = runner; ch.Visual = visual; ch.Mop = mop;
+            var ch = go.AddComponent<NeonChaser>(); ch.Runner = runner; ch.Visual = visual; ch.Mop = mop; ch.Eye = eye;
             return ch;
         }
 

@@ -3,6 +3,8 @@ using UnityEngine;
 namespace Biopulse.Neon
 {
     // Side-scroller camera: look-ahead, lazy vertical follow, trauma shake and zoom punch.
+    // Runs before parallax layers so they capture the snapped camera position in Start.
+    [DefaultExecutionOrder(-50)]
     [RequireComponent(typeof(Camera))]
     public sealed class NeonCamera : MonoBehaviour
     {

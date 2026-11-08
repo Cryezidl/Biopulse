@@ -12,6 +12,8 @@ namespace Biopulse.Neon
         public LineRenderer Cable;
         public SpriteRenderer Claw, AimRing;
         public LineRenderer ReachArc;
+        // Visual origin of the cable relative to the runner centre: the bionic shoulder of the hero sprite.
+        public Vector2 ShoulderOffset = new Vector2(.06f, .62f);
         private const int ArcPoints = 28, RopePoints = 16;
         private Vector3 trueEnd;
         private float shoot = 1, twang, clawSpin;
@@ -32,7 +34,7 @@ namespace Biopulse.Neon
             if (show && Cable.positionCount == 2) trueEnd = Cable.GetPosition(1);
             if (show)
             {
-                Vector3 a = Grab.Runner.transform.position;
+                Vector3 a = Grab.Runner.transform.position + (Vector3)ShoulderOffset;
                 if (!wasShown) shoot = 0;
                 if (grabbed && !wasGrabbed) twang = 1;
                 shoot = Mathf.Min(1, shoot + dt / .07f);

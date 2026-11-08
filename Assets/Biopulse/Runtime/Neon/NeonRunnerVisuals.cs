@@ -18,6 +18,9 @@ namespace Biopulse.Neon
         private Vector2 deathVelocity;
         private float deathSpin, deathTime, blink;
         private Vector3 baseScale = Vector3.one;
+        public bool IsDying => dying;
+        // The flip-book animator already bakes lean and bob into the run frames; keep only a hint procedurally.
+        public float RunLean = -2f, RunBob = .015f;
 
         private void Awake() { if (Pivot != null) baseScale = Pivot.localScale; }
 
@@ -70,8 +73,8 @@ namespace Biopulse.Neon
             else if (grounded && Motor.State == RunnerMotionState.Running)
             {
                 runPhase += dt * Mathf.Max(4, Motor.RunSpeed) * 2.6f;
-                bob = Mathf.Abs(Mathf.Sin(runPhase)) * .07f;
-                targetTilt = -7 + Mathf.Sin(runPhase * 2) * 2;
+                bob = Mathf.Abs(Mathf.Sin(runPhase)) * RunBob;
+                targetTilt = RunLean + Mathf.Sin(runPhase * 2) * .6f;
             }
             else if (!grounded)
                 targetTilt = Mathf.Clamp(v.y * 1.4f, -14, 14) - 4;

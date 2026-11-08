@@ -106,6 +106,8 @@ namespace Biopulse.Neon
 
             channels.Update(Input, GetScale(), "ВЫБОР", "ОК", dt);
             fade.alpha = pending != null ? Mathf.Clamp01((t - confirmAt) / .35f) : Mathf.Max(0, fade.alpha - dt * 2.5f);
+            // Unattended verification (Player.exe -autopilot): skip the menu straight into level 1.
+            if (NeonAutopilot.CommandLine && pending == null && t > .5f && Items != null && Items.Length > 0) { pending = Items[0].Scene; confirmAt = t; }
             if (pending != null && t - confirmAt > .4f) { var s = pending; pending = null; SceneManager.LoadScene(s); }
             // Dev: Player.exe -menuShot <file.png> captures the menu and exits (used for documentation screenshots).
             var args = System.Environment.GetCommandLineArgs();

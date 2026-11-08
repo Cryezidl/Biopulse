@@ -18,6 +18,7 @@ namespace Biopulse.Gameplay
         public LineRenderer Arm { get => arm; set => arm = value; }
         public LayerMask QueryLayers { get => queryLayers; set => queryLayers = value; }
         public GrabTarget Target { get; private set; }
+        public GrabTarget AimTarget { get; private set; }
         public bool IsReaching { get; private set; }
         public float CurrentReach { get; private set; }
         public string Feedback { get; private set; } = "F / С: reach a yellow target";
@@ -28,13 +29,18 @@ namespace Biopulse.Gameplay
             IsReaching = true; remaining = reachSeconds; resetVersion = runner.ResetVersion;
             UpdateReach(amplitude); Feedback = "Reaching"; return true;
         }
-        public void CancelReach() { IsReaching = false; if (arm != null && (runner == null || !runner.IsGrabbed)) arm.enabled = false; }
+        public void CancelReach() { IsReaching = false; AimTarget = null; if (arm != null && (runner == null || !runner.IsGrabbed)) arm.enabled = false; }
         public void Release()
         {
-            CancelReach(); Target = null; runner?.ReleaseGrab();
+            runner?.ReleaseGrab(); CancelReach(); Target = null;
             Feedback = "Released by Р (no jump impulse)";
         }
-        private void OnDisable() { CancelReach(); Target = null; runner?.ReleaseGrab(); }
+        private void OnDisable() { runner?.ReleaseGrab(); CancelReach(); Target = null; }
+        private void LateUpdate()
+        {
+            if (runner != null && runner.IsGrabbed && Target != null) DrawArm(anchor);
+            else if (!IsReaching && arm != null) arm.enabled = false;
+        }
         public void UpdateReach(float amplitude) => CurrentReach = Mathf.Lerp(minReach, maxReach, Mathf.Clamp01(amplitude));
 
         public void Step(float amplitude, bool inputReady, float deltaSeconds)
@@ -43,7 +49,16 @@ namespace Biopulse.Gameplay
             if (runner.IsGrabbed)
             {
                 if (Target == null || !Target.isActiveAndEnabled) { Release(); Feedback = "Target lost"; }
-                else DrawArm(anchor);
+                else
+                {
+                    if (inputReady && !runner.IsSuspended)
+                    {
+                        anchor = Target.transform.position;
+                        runner.UpdateGrabAnchor(anchor);
+                        if (!Visible(runner.Body.position, anchor)) { Release(); Feedback = "Arm blocked"; return; }
+                    }
+                    DrawArm(anchor);
+                }
                 return;
             }
             Target = null;
@@ -52,25 +67,27 @@ namespace Biopulse.Gameplay
             if (!IsReaching) { if (arm != null) arm.enabled = false; return; }
             UpdateReach(amplitude);
             Vector2 origin = runner.Body.position;
-            GrabTarget best = null; float bestAngle = float.PositiveInfinity, bestDistance = float.PositiveInfinity;
+            GrabTarget best = null; float bestDistance = float.PositiveInfinity;
             foreach (var target in GrabTarget.Active)
             {
                 if (target == null || !target.isActiveAndEnabled || (queryLayers.value & (1 << target.gameObject.layer)) == 0) continue;
                 Vector2 delta = (Vector2)target.transform.position - origin;
                 float distance = delta.magnitude;
-                float angle = Vector2.Angle(new Vector2(1, 1), delta);
-                if (delta.x < -.05f || delta.y < 0 || distance > CurrentReach || angle > 60 || !Visible(origin, target.transform.position)) continue;
-                bool better = angle < bestAngle - .001f || (Mathf.Abs(angle - bestAngle) <= .001f &&
-                    (distance < bestDistance - .001f || (Mathf.Abs(distance - bestDistance) <= .001f &&
-                    (best == null || string.CompareOrdinal(target.StableId, best.StableId) < 0))));
-                if (better) { best = target; bestAngle = angle; bestDistance = distance; }
+                // Aim at the nearest visible target in front, including level/below the airborne player.
+                // Search the full possible reach so a weak attempt still points toward its target.
+                if (delta.x < 0 || distance > maxReach || !Visible(origin, target.transform.position)) continue;
+                bool better = distance < bestDistance - .001f || (Mathf.Abs(distance - bestDistance) <= .001f &&
+                    (best == null || string.CompareOrdinal(target.StableId, best.StableId) < 0));
+                if (better) { best = target; bestDistance = distance; }
             }
-            if (best != null && runner.BeginGrab())
+            AimTarget = best;
+            if (best != null && bestDistance <= CurrentReach && runner.BeginGrab(best.transform.position))
             {
                 Target = best; anchor = best.transform.position; IsReaching = false;
-                Feedback = "Grabbed: relax; Р releases"; DrawArm(anchor); return;
+                Feedback = "Pulling / swinging: relax; Р releases with momentum"; DrawArm(anchor); return;
             }
-            DrawArm(origin + new Vector2(.7071f, .7071f) * CurrentReach);
+            Vector2 direction = best == null ? Vector2.right : ((Vector2)best.transform.position - origin).normalized;
+            DrawArm(origin + direction * CurrentReach);
             remaining -= deltaSeconds;
             if (remaining <= 0) { CancelReach(); Feedback = "No reachable visible target; release С and retry"; }
         }

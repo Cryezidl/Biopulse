@@ -1,6 +1,13 @@
 {
   "name": "Biopulse.Editor",
   "rootNamespace": "Biopulse",
-  "references": ["Biopulse.Core", "Biopulse.Runtime"],
+  "references": [
+    "Biopulse.Core",
+    "Biopulse.Runtime",
+    "UnityEngine.UI",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Universal.2D.Runtime"
+  ],
   "includePlatforms": ["Editor"]
 }

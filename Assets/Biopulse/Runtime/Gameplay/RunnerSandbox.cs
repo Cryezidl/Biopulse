@@ -49,7 +49,7 @@ namespace Biopulse.Gameplay
             var terminal = runner.GetComponent<RunnerLockController>();
             if (terminal != null) GUILayout.Label($"Lock: {(terminal.Current == null ? 0 : terminal.Current.Challenge.Progress) * 100:F0}% | {terminal.Feedback}");
             var grab = runner.GetComponent<RunnerGrabController>();
-            if (grab != null) GUILayout.Label($"Reach: {grab.CurrentReach:F2} | {grab.Feedback}");
+            if (grab != null) GUILayout.Label($"Reach: {grab.CurrentReach:F2} | Rope: {runner.GrabLength:F2} | {grab.Feedback}");
             GUILayout.Label($"Jump #{runner.JumpCount}: amplitude {runner.LastJumpAmplitude:F2}, impulse {runner.LastJumpImpulse:F2}");
             GUILayout.Label($"Peak height: {runner.LastJumpHeight:F2} | Buffer: {runner.LastJumpUsedBuffer} | Coyote: {runner.LastJumpUsedCoyote}");
             GUILayout.Label($"С amplitude: {input.FlexAmplitude:F2}");

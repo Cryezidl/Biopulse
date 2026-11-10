@@ -36,6 +36,8 @@ namespace Biopulse.Tests
             foreach(var root in scene.GetRootGameObjects())
             { var candidate = root.GetComponentInChildren<CalibrationTutorial>(true); if(candidate != null) wizard = candidate; }
             Assert.That(wizard,Is.Not.Null);
+            // Keep this replay focused on the legacy calibration fixture; the course has separate tests.
+            wizard.TutorialScene = "";
             var input = wizard.Input;
             input.SendMessage("OnApplicationFocus",true); input.SendMessage("OnApplicationPause",false);
             testSource = "test-wizard-" + System.Guid.NewGuid().ToString("N");

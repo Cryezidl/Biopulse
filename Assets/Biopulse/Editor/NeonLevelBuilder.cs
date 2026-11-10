@@ -42,7 +42,8 @@ namespace Biopulse.EditorTools
             public Color FarTint, MidTint, Edge, Accent, Goo, Ambient, Sky, SkyGlow;
             public Color FloorTint = Color.white, CrateTint = Color.white, Underfloor = new Color(.035f, .04f, .06f);
             public float AmbientIntensity = .8f;
-            public bool Ceiling = true;
+            public bool Ceiling = true, Rain;
+            public Color WallTint = new Color(.5f, .45f, .55f);
             public PitStyle Pit = PitStyle.Goo;
         }
 
@@ -51,54 +52,56 @@ namespace Biopulse.EditorTools
             public int Number; public string Scene, Title, Subtitle, Next;
             public float RunSpeed = 5f;
             public Theme Theme; public string Layout;
+            public bool Tutorial;
         }
 
         public static readonly Theme Underground = new Theme
         {
             Layers = new[]
             {
-                new Layer("Lab_Back.png", 64, .78f, .5f, -1f, -100),
-                new Layer("Lab_Mid.png", 80, .5f, .3f, -1f, -50),
-                new Layer("Lab_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.4f },
+                new Layer("U_Back.png", 64, .78f, .5f, -1f, -100),
+                new Layer("U_Mid.png", 80, .5f, .3f, -1f, -50) { Tint = new Color(.8f, .84f, .84f) },
+                new Layer("U_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.4f },
             },
             Far = "Lab_Far.png", Mid = "Lab_Mid.png",
             FarTint = new Color(.36f, .42f, .5f), MidTint = new Color(.75f, .8f, .9f),
-            Edge = new Color(.2f, .95f, 1f), Accent = new Color(.3f, 1f, .5f), Goo = new Color(.35f, 1f, .4f),
-            Ambient = new Color(.6f, .72f, .95f), Sky = new Color(.02f, .035f, .05f), SkyGlow = new Color(.05f, .3f, .2f, .5f),
-            AmbientIntensity = .85f, Floor = "Floor_Lab.png"
+            Edge = new Color(.55f, .85f, .75f), Accent = new Color(.7f, 1f, .3f), Goo = new Color(.7f, 1f, .3f),
+            Ambient = new Color(.75f, .9f, .88f), Sky = new Color(.02f, .04f, .045f), SkyGlow = new Color(.05f, .3f, .2f, .5f),
+            Underfloor = new Color(.018f, .036f, .04f),
+            AmbientIntensity = .9f, Floor = "U_Floor.png"
         };
 
         public static readonly Theme SurfaceLab = new Theme
         {
             Layers = new[]
             {
-                new Layer("Lab2_Back.png", 64, .78f, .5f, -1f, -100),
-                new Layer("Lab2_Mid.png", 80, .5f, .3f, -1f, -50),
-                new Layer("Lab2_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.4f },
+                new Layer("S_Back.png", 64, .78f, .5f, -1f, -100),
+                new Layer("S_Mid.png", 80, .5f, .3f, -1f, -50) { Tint = new Color(.84f, .84f, .88f) },
+                new Layer("S_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.4f },
             },
             Far = "Lab2_Far.png", Mid = "Lab2_Mid.png",
             FarTint = new Color(.4f, .41f, .5f), MidTint = new Color(.85f, .85f, .95f),
-            Edge = new Color(1f, .32f, .42f), Accent = new Color(1f, .25f, .2f), Goo = new Color(.35f, .7f, 1f),
-            Ambient = new Color(.85f, .82f, .95f), Sky = new Color(.035f, .03f, .05f), SkyGlow = new Color(.4f, .05f, .08f, .45f),
-            Underfloor = new Color(.05f, .045f, .06f),
-            AmbientIntensity = .95f, Pit = PitStyle.Electric, Floor = "Floor_Office.png"
+            Edge = new Color(.6f, .66f, .9f), Accent = new Color(1f, .27f, .22f), Goo = new Color(.45f, .75f, 1f),
+            Ambient = new Color(.82f, .84f, .98f), Sky = new Color(.02f, .022f, .045f), SkyGlow = new Color(.4f, .05f, .08f, .45f),
+            Underfloor = new Color(.02f, .022f, .04f),
+            AmbientIntensity = .95f, Pit = PitStyle.Electric, Floor = "S_Floor.png"
         };
 
         public static readonly Theme Rooftops = new Theme
         {
             Layers = new[]
             {
-                new Layer("Roof_Sky.png", 48, .97f, 1f, -4f, -130),
-                new Layer("Roof_Far.png", 80, .82f, .55f, -2f, -100),
-                new Layer("Roof_Mid.png", 80, .55f, .3f, -2.5f, -50),
-                new Layer("Roof_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.2f },
+                new Layer("R_Sky.png", 48, .97f, 1f, -4f, -130),
+                new Layer("R_Far.png", 80, .82f, .55f, -2f, -100),
+                new Layer("R_Mid.png", 80, .55f, .3f, -2.5f, -50) { Tint = new Color(.88f, .86f, .9f) },
+                new Layer("R_Front.png", 80, -.35f, 1f, 0, 60) { AnchorTop = true, TopInset = 4.2f },
             },
             Far = "Roof_Far.png", Mid = "Roof_Mid.png", FarPpu = 80, FarFactor = .85f, MidFactor = .5f, FarY = 3.2f, MidY = 3.0f,
             FarTint = new Color(.8f, .72f, .95f), MidTint = new Color(.9f, .82f, 1f),
-            Edge = new Color(1f, .35f, .8f), Accent = new Color(1f, .6f, .2f), Goo = new Color(1f, .35f, .8f),
-            Ambient = new Color(.8f, .65f, 1f), Sky = new Color(.03f, .015f, .08f), SkyGlow = new Color(.75f, .18f, .4f, .75f),
-            CrateTint = new Color(.92f, .86f, 1f), Underfloor = new Color(.07f, .045f, .11f),
-            AmbientIntensity = .9f, Ceiling = false, Pit = PitStyle.Void, Floor = "Floor_Roof.png", Wall = "Wall_Roof.png"
+            Edge = new Color(.85f, .6f, .75f), Accent = new Color(1f, .55f, .35f), Goo = new Color(1f, .4f, .65f),
+            Ambient = new Color(.9f, .78f, .95f), Sky = new Color(.04f, .025f, .09f), SkyGlow = new Color(.75f, .18f, .4f, .75f),
+            CrateTint = Color.white, Underfloor = new Color(.05f, .03f, .07f), WallTint = new Color(.85f, .8f, .88f),
+            AmbientIntensity = .9f, Ceiling = false, Pit = PitStyle.Void, Floor = "R_Floor.png", Wall = "R_Wall.png", Rain = true
         };
 
         public static readonly LevelDef[] Levels =
@@ -122,10 +125,8 @@ namespace Biopulse.EditorTools
             new LevelDef
             {
                 Number = 3, Scene = "Neon_L3_Rooftops", Next = "Neon_Menu", RunSpeed = 6.8f,
-                Title = "КРЫШИ", Subtitle = "Последний рывок к свободе", Theme = Rooftops,
-                Layout = "run 8 pit 2.6 low pit 3 mid pit 3.6 cp high pit 2.6 laser pit 3.6 low mid cp " +
-                         "pit 3 rail 9 high pit 3.6 mid low cp pit 2.6 high pit 3 laser mid pit 3.6 cp " +
-                         "low pit 3 high pit 2.6 mid pit 3.6 laser cp run 4 term run 2 pit 3 high pit 3.6 cp run 4 rail 10 high pit 3 mid pit 3.6 run 3 exit"
+                Title = "КРЫШИ", Subtitle = "Беги дальше. Побей свой рекорд.", Theme = Rooftops,
+                Layout = "" // Runtime stream; patterns are defined in NeonEndlessRooftops.
             },
         };
 
@@ -135,12 +136,59 @@ namespace Biopulse.EditorTools
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             PrepareAssets();
             foreach (var level in Levels) Build(level);
+            Build(TutorialLevel);
             BuildMenu();
             RegisterScenes();
             EditorSceneManager.OpenScene($"{Scenes}/{MenuScene}.unity");
         }
 
         public const string MenuScene = "Neon_Menu";
+
+        public static readonly LevelDef TutorialLevel = new LevelDef
+        {
+            Number = 0, Scene = "Neon_Tutorial", Next = "Neon_L1_Underground", RunSpeed = 6,
+            Title = "УЧЕБНЫЙ БЛОК", Subtitle = "Освой управление в своём темпе · без погони",
+            Theme = Underground, Tutorial = true,
+            // Finish at 165.6 m: exactly half of level 1's 331.2 m course.
+            Layout = "run 9 low run 3 mid run 3 high cp pit 3 run 5 cp rail 5 run 6 cp term " +
+                     "run 6 low mid run 3 pit 3 run 5 cp rail 5 run 6 low mid high run 3.6 exit"
+        };
+
+        [MenuItem("Biopulse/Neon/Build Tutorial Only")]
+        public static void BuildTutorialOnly()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            PrepareAssets(true);
+            Build(TutorialLevel);
+            RegisterScenes();
+            // Keep the existing menu artwork and all three level scenes intact.
+            var menuScene = EditorSceneManager.OpenScene($"{Scenes}/{MenuScene}.unity");
+            var menu = Object.FindFirstObjectByType<NeonMenu>();
+            if (menu != null)
+            {
+                var items = new List<NeonMenu.Item>(menu.Items);
+                int index = items.FindIndex(item => item.Scene == "CalibrationTutorial" || item.Scene == TutorialLevel.Scene);
+                if (index >= 0) items[index] = TutorialMenuItem();
+                else items.Insert(1, TutorialMenuItem());
+                if (!items.Exists(item => item.Scene == "CalibrationTutorial"))
+                    items.Add(new NeonMenu.Item { Title = "КАЛИБРОВКА", Subtitle = "Настроить каналы перед обучением", Scene = "CalibrationTutorial" });
+                menu.Items = items.ToArray();
+                EditorSceneManager.MarkSceneDirty(menuScene);
+                EditorSceneManager.SaveScene(menuScene);
+            }
+            EditorSceneManager.OpenScene($"{Scenes}/{TutorialLevel.Scene}.unity");
+        }
+
+        private static NeonMenu.Item TutorialMenuItem() => new NeonMenu.Item
+        { Title = "ОБУЧЕНИЕ", Subtitle = "Прыжки, пропасти, захват и взлом · без погони", Scene = "Neon_Tutorial" };
+
+        [MenuItem("Biopulse/Neon/Build Endless Rooftops Only")]
+        public static void BuildRooftopsOnly()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            PrepareAssets();
+            Build(Levels[2]);
+        }
 
         private static void BuildMenu()
         {
@@ -183,9 +231,10 @@ namespace Biopulse.EditorTools
             menu.Items = new[]
             {
                 new NeonMenu.Item { Title = "ИГРАТЬ", Subtitle = "Уровень 1 · Подземная лаборатория", Scene = Levels[0].Scene, Level = 1 },
-                new NeonMenu.Item { Title = "НАСТРОЙКА И ОБУЧЕНИЕ", Subtitle = "Калибровка каналов и шаги управления", Scene = "CalibrationTutorial", Level = 0 },
+                TutorialMenuItem(),
                 new NeonMenu.Item { Title = "УРОВЕНЬ 2", Subtitle = "Наземная лаборатория", Scene = Levels[1].Scene, Level = 2 },
                 new NeonMenu.Item { Title = "УРОВЕНЬ 3", Subtitle = "Крыши", Scene = Levels[2].Scene, Level = 3 },
+                new NeonMenu.Item { Title = "КАЛИБРОВКА", Subtitle = "Настроить каналы перед обучением", Scene = "CalibrationTutorial" },
             };
             EditorSceneManager.SaveScene(scene, $"{Scenes}/{MenuScene}.unity");
         }
@@ -194,7 +243,7 @@ namespace Biopulse.EditorTools
         private static Material unlit, lit;
         private static PhysicsMaterial2D slick;
         private static Sprite white, dot, softDot, ring, gradient, crate, crate2, terminal, gate, botBody, botMop, character,
-            anchor, emitter, drone, beacon, exitDoor, botEye;
+            anchor, emitter, drone, beacon, exitDoor, botEye, specimenHand;
         private static Font font;
         private static Sprite[] heroRun, heroIdle;
         private static Sprite heroRise, heroApex, heroFall, heroLand, heroHang, heroSwingF, heroSwingB, heroReach, heroDeath;
@@ -209,7 +258,7 @@ namespace Biopulse.EditorTools
         }
         private static VolumeProfile post;
 
-        private static void PrepareAssets()
+        private static void PrepareAssets(bool preservePost = false)
         {
             Directory.CreateDirectory(Generated);
             WritePng("White.png", 8, (x, y, s) => 1);
@@ -237,6 +286,7 @@ namespace Biopulse.EditorTools
             botBody = Import($"{Sprites}/Mop3000_Body.png", 220, new Vector2(.5f, .5f));
             botMop = Import($"{Sprites}/Mop3000_Mop.png", 220, new Vector2(.5f, .5f));
             botEye = Import($"{Sprites}/Mop3000_Eye.png", 220, new Vector2(.5f, .5f));
+            specimenHand = Import($"{Sprites}/Specimen_Hand.png", 120, new Vector2(.5f, .5f));
             character = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Biopulse/Art/Laboratory/MainCharacter.png");
             heroRun = HeroSeq("run", 10); heroIdle = HeroSeq("idle", 6);
             heroRise = Hero("rise_00"); heroApex = Hero("apex_00"); heroFall = Hero("fall_00"); heroLand = Hero("land_00");
@@ -253,16 +303,21 @@ namespace Biopulse.EditorTools
             if (slick == null) { slick = new PhysicsMaterial2D("Slick") { friction = 0, bounciness = 0 }; AssetDatabase.CreateAsset(slick, slickPath); }
 
             string postPath = $"{Generated}/NeonPost.asset";
+            if (preservePost)
+            {
+                post = AssetDatabase.LoadAssetAtPath<VolumeProfile>(postPath);
+                if (post != null) return;
+            }
             AssetDatabase.DeleteAsset(postPath);
             post = ScriptableObject.CreateInstance<VolumeProfile>();
             AssetDatabase.CreateAsset(post, postPath);
             var bloom = post.Add<Bloom>(true);
-            bloom.threshold.Override(.78f); bloom.intensity.Override(1.35f); bloom.scatter.Override(.72f);
+            // Painterly look: crisp image, bloom only on real light sources, no lens tricks.
+            bloom.threshold.Override(.9f); bloom.intensity.Override(.8f); bloom.scatter.Override(.65f);
             var vignette = post.Add<Vignette>(true);
-            vignette.intensity.Override(.34f); vignette.smoothness.Override(.45f); vignette.color.Override(new Color(.02f, 0, .05f));
-            var ca = post.Add<ChromaticAberration>(true); ca.intensity.Override(.12f);
-            var color = post.Add<ColorAdjustments>(true); color.contrast.Override(14); color.saturation.Override(12);
-            var grain = post.Add<FilmGrain>(true); grain.intensity.Override(.12f);
+            vignette.intensity.Override(.3f); vignette.smoothness.Override(.5f); vignette.color.Override(new Color(.0f, .02f, .025f));
+            var color = post.Add<ColorAdjustments>(true); color.contrast.Override(6); color.saturation.Override(0);
+            var grain = post.Add<FilmGrain>(true); grain.intensity.Override(.04f);
             foreach (var c in post.components) AssetDatabase.AddObjectToAsset(c, post);
             EditorUtility.SetDirty(post);
             AssetDatabase.SaveAssets();
@@ -332,7 +387,7 @@ namespace Biopulse.EditorTools
             // Layout pass.
             c.X = -6;
             Ground(c, -6, 0, true);
-            var tokens = def.Layout.Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
+            var tokens = (def.Number == 3 ? "" : def.Layout).Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < tokens.Length; i++)
             {
                 string t = tokens[i];
@@ -355,10 +410,10 @@ namespace Biopulse.EditorTools
                 }
                 if (usedArg) i++;
             }
-            Ground(c, c.X, c.X + 30, false);
+            if (def.Number != 3) Ground(c, c.X, c.X + 30, false);
             if (c.T.Ceiling) Ceiling(c, -20, c.X + 40);
             Backdrop(c, -20, c.X + 40);
-            AmbientLights(c, -6, c.X);
+            if (def.Number != 3) AmbientLights(c, -6, c.X);
 
             // Runner.
             var runner = Runner(c, new Vector2(0, .82f), def.RunSpeed, out var grab, out var locks, out var visuals);
@@ -370,7 +425,7 @@ namespace Biopulse.EditorTools
             router.Runner = runner; router.Grab = grab; router.Terminal = locks; router.Input = input;
             router.enabled = false;
 
-            var chaser = Chaser(runner);
+            var chaser = def.Tutorial ? null : Chaser(runner);
             var fx = new GameObject("FX").AddComponent<NeonFx>(); fx.UnlitMaterial = unlit;
             var hud = new GameObject("HUD").AddComponent<NeonHud>(); hud.Font = font;
             var session = new GameObject("Level Session").AddComponent<NeonLevelSession>();
@@ -378,6 +433,21 @@ namespace Biopulse.EditorTools
             session.Cam = neonCam; session.Hud = hud; session.Fx = fx; session.Chaser = chaser; session.Visuals = visuals;
             session.LevelNumber = def.Number; session.Title = def.Title; session.Subtitle = def.Subtitle; session.NextScene = def.Next;
             session.FinishX = c.FinishX; session.CheckpointXs = c.Checkpoints;
+            session.IsTutorial = def.Tutorial;
+            if (def.Tutorial)
+            {
+                var tutorial = session.gameObject.AddComponent<NeonTutorial>();
+                tutorial.Session = session;
+                tutorial.Configure(c.Zones.GetComponentsInChildren<NeonTimingZone>());
+                session.Tutorial = tutorial;
+            }
+            if (def.Number == 3)
+            {
+                session.Endless = true;
+                var endless = new GameObject("Endless Rooftops").AddComponent<NeonEndlessRooftops>();
+                endless.Session = session;
+                endless.Templates = BuildRooftopTemplates(def);
+            }
             hud.Session = session;
             session.gameObject.AddComponent<NeonAutopilot>().Session = session;
             var audio = session.gameObject.AddComponent<NeonAudio>();
@@ -385,34 +455,83 @@ namespace Biopulse.EditorTools
             audio.MusicBpm = def.Number == 1 ? 96 : def.Number == 2 ? 104 : 112;
             neonCam.Target = runner.transform;
 
+            NeonCoinBuilder.ConfigureScene(session);
+
             EditorSceneManager.SaveScene(scene, $"{Scenes}/{def.Scene}.unity");
             Debug.Log($"Built {def.Scene}: length {c.X:F0} units, {c.ZoneId} timing zones.");
+        }
+
+        private static NeonRooftopChunk[] BuildRooftopTemplates(LevelDef def)
+        {
+            var library = new GameObject("Rooftop templates (inactive)");
+            library.SetActive(false);
+            var templates = new NeonRooftopChunk[NeonEndlessRooftops.Patterns.Length];
+            for (int i = 0; i < templates.Length; i++)
+            {
+                var root = Child($"Roof pattern {i:00}", library.transform);
+                root.gameObject.SetActive(false);
+                var c = new Ctx { Def = def, T = def.Theme, World = root };
+                c.Deco = Child("Decor", root); c.Hazards = Child("Hazards", root);
+                c.Zones = Child("Timing zones", root); c.Lights = Child("Lights", root); c.Pickups = Child("Grab points", root);
+                var pattern = NeonEndlessRooftops.Patterns[i];
+                var tokens = pattern.Layout.Split(' ');
+                for (int t = 0; t < tokens.Length; t++)
+                {
+                    switch (tokens[t])
+                    {
+                        case "run": Run(c, float.Parse(tokens[++t], System.Globalization.CultureInfo.InvariantCulture)); break;
+                        case "pit": Pit(c, float.Parse(tokens[++t], System.Globalization.CultureInfo.InvariantCulture)); break;
+                        case "rail": Rail(c, float.Parse(tokens[++t], System.Globalization.CultureInfo.InvariantCulture)); break;
+                        case "grip": Rail(c, float.Parse(tokens[++t], System.Globalization.CultureInfo.InvariantCulture), true); break;
+                        case "grip-wave": Rail(c, float.Parse(tokens[++t], System.Globalization.CultureInfo.InvariantCulture), true, true); break;
+                        case "overhead": OverheadRoute(c); break;
+                        case "low": Crates(c, 1, "ПРЫЖОК", NeonChallenge.LowJump); break;
+                        case "mid": Crates(c, 2, "ПРЫЖОК СИЛЬНЕЕ", NeonChallenge.MidJump); break;
+                        case "high": Crates(c, 3, "МАКСИМАЛЬНЫЙ ПРЫЖОК", NeonChallenge.HighJump); break;
+                        case "laser": Laser(c); break;
+                        case "laser-mid": Laser(c, 2, 4.5f, 2.8f, 9); break;
+                        case "laser-high": Laser(c, 3, 5.5f, 3.2f, 10); break;
+                        case "ceiling": LaserCeiling(c); break;
+                        case "ceiling3": LaserCeiling(c, new[] { 1, 1, 1 }, 6.5f); break;
+                        case "ceiling-mid": LaserCeiling(c, new[] { 2, 2 }, 7.5f, 4.5f); break;
+                        case "ceiling-mixed": LaserCeiling(c, new[] { 1, 2, 1 }, 7.5f, 4.5f); break;
+                        default: throw new System.InvalidOperationException("Invalid rooftop pattern token: " + tokens[t]);
+                    }
+                }
+                var chunk = root.gameObject.AddComponent<NeonRooftopChunk>();
+                chunk.Length = c.X; chunk.MinimumTier = pattern.Tier;
+                chunk.Kind = pattern.Kind;
+                chunk.Zones = root.GetComponentsInChildren<NeonTimingZone>(true);
+                chunk.Targets = root.GetComponentsInChildren<GrabTarget>(true);
+                templates[i] = chunk;
+            }
+            return templates;
         }
 
         // ---------- pieces ----------
         private static void Run(Ctx c, float length) { Ground(c, c.X, c.X + length, false); c.X += length; }
 
-        private static void Crates(Ctx c, int stack, string hint, NeonChallenge kind)
+        private static void Crates(Ctx c, int stack, string hint, NeonChallenge kind, float length = 7)
         {
-            float start = c.X; Ground(c, start, start + 7, false);
-            float x = start + 4.2f;
+            float start = c.X; Ground(c, start, start + length, false);
+            float x = start + length * .6f;
             var root = new GameObject($"Crates x{stack}").transform; root.SetParent(c.World); root.position = new Vector3(x, 0);
             for (int i = 0; i < stack; i++)
                 Sprite(root, "Crate", ((int)x + i) % 2 == 0 ? crate : crate2, new Vector2(0, i * .8f), Vector2.one, c.T.CrateTint, 3, lit);
             var col = root.gameObject.AddComponent<BoxCollider2D>();
             col.size = new Vector2(.8f, .8f * stack); col.offset = new Vector2(0, .4f * stack); col.sharedMaterial = slick;
             Zone(c, start + .4f, x + 1.4f, kind, hint, false, x);
-            c.X = start + 7;
+            c.X = start + length;
         }
 
-        private static void Laser(Ctx c)
+        private static void Laser(Ctx c, int stack = 1, float beamY = 3.45f, float half = 2.3f, float length = 8)
         {
-            float start = c.X; Ground(c, start, start + 8, false);
-            float x = start + 4.6f;
+            float start = c.X; Ground(c, start, start + length, false);
+            float x = start + length * .575f;
             var root = new GameObject("Laser gate").transform; root.SetParent(c.Hazards); root.position = new Vector3(x, 0);
-            Sprite(root, "Crate", crate, Vector2.zero, Vector2.one, Color.white, 3, lit);
-            var col = root.gameObject.AddComponent<BoxCollider2D>(); col.size = new Vector2(.8f, .8f); col.offset = new Vector2(0, .4f); col.sharedMaterial = slick;
-            const float beamY = 3.45f; const float half = 2.3f;
+            for (int i = 0; i < stack; i++)
+                Sprite(root, "Crate", i % 2 == 0 ? crate : crate2, new Vector2(0, i * .8f), Vector2.one, Color.white, 3, lit);
+            var col = root.gameObject.AddComponent<BoxCollider2D>(); col.size = new Vector2(.8f, .8f * stack); col.offset = new Vector2(0, .4f * stack); col.sharedMaterial = slick;
             foreach (float side in new[] { -half, half })
             {
                 if (c.T.Ceiling)
@@ -434,8 +553,9 @@ namespace Biopulse.EditorTools
             hazard.size = new Vector2(half * 2, .16f); hazard.isTrigger = true;
             hazard.gameObject.AddComponent<NeonHazard>().Kind = NeonDeath.Laser;
             PointLight(c, new Vector2(x, beamY), new Color(1, .2f, .15f), 4, 1.2f);
-            Zone(c, start + .6f, x + 1.6f, NeonChallenge.LowJump, "СЛАБЫЙ ПРЫЖОК — ЛАЗЕР!", false, x);
-            c.X = start + 8;
+            var kind = stack == 1 ? NeonChallenge.LowJump : stack == 2 ? NeonChallenge.MidJump : NeonChallenge.HighJump;
+            Zone(c, start + .6f, x + 1.6f, kind, stack == 1 ? "СЛАБЫЙ ПРЫЖОК — ЛАЗЕР!" : "ПОДБЕРИ ВЫСОТУ ПРЫЖКА!", false, x);
+            c.X = start + length;
         }
 
         private static void Pit(Ctx c, float width)
@@ -448,32 +568,81 @@ namespace Biopulse.EditorTools
             c.X = b;
         }
 
-        private static void Rail(Ctx c, float width)
+        private static void LaserCeiling(Ctx c, int[] stacks = null, float spacing = 7, float beamY = 3.45f)
+        {
+            float start = c.X;
+            stacks = stacks ?? new[] { 1, 1 };
+            foreach (int stack in stacks)
+                Crates(c, stack, stack == 1 ? "СЛАБЫЙ ПРЫЖОК — ПОТОЛОК!" : "СРЕДНИЙ ПРЫЖОК — ПОТОЛОК!",
+                    stack == 1 ? NeonChallenge.LowJump : NeonChallenge.MidJump, spacing);
+            Run(c, 2);
+            float length = c.X - start;
+            var root = Child("Laser ceiling", c.Hazards);
+            root.position = new Vector3(start + length / 2, beamY);
+            float half = length / 2 - 1.6f;
+            foreach (float side in new[] { -half, half })
+                Sprite(root, "Ceiling drone", drone, new Vector2(side, .02f), Vector2.one, Color.white, 4, unlit)
+                    .gameObject.AddComponent<NeonBob>();
+            var beam = Sprite(root, "Ceiling beam", white, Vector2.zero, new Vector2(half * 2, .11f), new Color(1, .2f, .15f), 6, unlit);
+            beam.gameObject.AddComponent<NeonPulse>().Speed = 22;
+            Sprite(root, "Ceiling glow", softDot, Vector2.zero, new Vector2(half * 2.1f, .8f), new Color(1, .15f, .1f, .3f), 5, unlit);
+            var hazard = root.gameObject.AddComponent<BoxCollider2D>();
+            hazard.isTrigger = true; hazard.size = new Vector2(half * 2, .16f); hazard.offset = new Vector2(0, .05f);
+            root.gameObject.AddComponent<NeonHazard>().Kind = NeonDeath.Laser;
+            PointLight(c, new Vector2(start + 4, beamY), new Color(1, .2f, .15f), 4, 1);
+            PointLight(c, new Vector2(start + length - 4, beamY), new Color(1, .2f, .15f), 4, 1);
+        }
+
+        private static void Rail(Ctx c, float width, bool cubes = false, bool wave = false)
         {
             float lead = 4;
             Ground(c, c.X, c.X + lead, false);
             float a = c.X + lead, b = a + width;
             Goo(c, a, b);
-            var root = new GameObject("Swing chasm").transform; root.SetParent(c.Pickups); root.position = new Vector3(a, 0);
+            var root = new GameObject(cubes ? "Grapple cubes" : "Swing chasm").transform; root.SetParent(c.Pickups); root.position = new Vector3(a, 0);
             // Hooks hang high on cables over the chasm, ~5 units apart: grab → whip round → release → next hook.
             int count = Mathf.Max(1, Mathf.RoundToInt(width / 5f));
+            AddGrabTargets(c, root, a, width, count, cubes, wave);
+            float span = width / count;
+            Zone(c, a - 4.5f, b + .8f, NeonChallenge.Grab, count > 1 ? "ЗАХВАТ · Р · ЗАХВАТ" : "ЗАХВАТ · Р — ЛЕТИ!", true, a + span * .5f);
+            c.X = b;
+        }
+
+        private static void OverheadRoute(Ctx c)
+        {
+            float start = c.X;
+            Run(c, 3);
+            Crates(c, 1, "ПРЫЖОК ИЛИ ЗАХВАТ", NeonChallenge.LowJump);
+            Crates(c, 2, "ПРЫЖОК ИЛИ ЗАХВАТ", NeonChallenge.MidJump);
+            Run(c, 3);
+            var root = Child("Cubes above rooftop", c.Pickups);
+            root.position = new Vector3(start + 2, 0);
+            AddGrabTargets(c, root, start + 2, 15, 3, true, true);
+            Zone(c, start, c.X - .5f, NeonChallenge.Grab, "ЗАХВАТЫ НАД КРЫШЕЙ", true, start + 4.5f);
+        }
+
+        private static void AddGrabTargets(Ctx c, Transform root, float a, float width, int count, bool cubes, bool wave)
+        {
             float span = width / count;
             for (int k = 0; k < count; k++)
             {
                 float gx = span * (k + .5f);
-                const float hookY = 4.6f;
-                var point = new GameObject($"Hook {k + 1}").transform; point.SetParent(root, false); point.localPosition = new Vector3(gx, hookY);
+                float hookY = wave ? (k % 3 == 0 ? 4.4f : k % 3 == 1 ? 5.1f : 4.7f) : 4.6f;
+                var point = new GameObject($"{(cubes ? "Grab cube" : "Hook")} {k + 1}").transform; point.SetParent(root, false); point.localPosition = new Vector3(gx, hookY);
                 Sprite(root, "Hook cable", white, new Vector2(gx, hookY + 3.4f), new Vector2(.05f, 6f), new Color(.05f, .05f, .08f), 4, unlit);
                 var target = point.gameObject.AddComponent<GrabTarget>(); target.StableId = $"L{c.Def.Number}/hook@{a + gx:F1}";
                 var gp = point.gameObject.AddComponent<NeonGrabPoint>(); gp.MaxReach = 6;
                 gp.Halo = Sprite(point, "Halo", softDot, Vector2.zero, Vector2.one * 2f, NeonPalette.Alpha(NeonPalette.Flex, .3f), 6, unlit);
-                Sprite(point, "Anchor", anchor, Vector2.zero, Vector2.one, Color.white, 6, unlit);
+                if (cubes)
+                {
+                    Sprite(point, "Cube glow", softDot, Vector2.zero, Vector2.one * 2.4f, NeonPalette.Alpha(NeonPalette.Flex, .4f), 5, unlit);
+                    Sprite(point, "Grab cube body", crate2, new Vector2(0, -.45f), Vector2.one * 1.25f, new Color(.65f, 1, 1), 6, unlit);
+                }
+                Sprite(point, "Anchor", anchor, Vector2.zero, Vector2.one * (cubes ? .7f : 1), Color.white, 7, unlit);
                 gp.Core = Sprite(point, "Core", ring, Vector2.zero, Vector2.one * .46f, NeonPalette.Flex, 7, unlit);
                 Sprite(point, "Handle", dot, Vector2.zero, Vector2.one * .26f, Color.white, 8, unlit);
                 PointLight(c, new Vector2(a + gx, hookY), NeonPalette.Flex, 4f, 1f);
             }
-            Zone(c, a - 4.5f, b + .8f, NeonChallenge.Grab, count > 1 ? "ЗАХВАТ · Р · ЗАХВАТ" : "ЗАХВАТ · Р — ЛЕТИ!", true, a + span * .5f);
-            c.X = b;
         }
 
         private static void Checkpoint(Ctx c)
@@ -538,7 +707,7 @@ namespace Biopulse.EditorTools
             top.drawMode = SpriteDrawMode.Tiled; top.size = new Vector2(b - a, 2f);
             if (c.T.Wall != null)
             {
-                var wall = Sprite(root, "Wall", FloorSprite(c.T.Wall, 80), new Vector2(0, -1.9f), Vector2.one, new Color(.5f, .45f, .55f), 0, unlit);
+                var wall = Sprite(root, "Wall", FloorSprite(c.T.Wall, 80), new Vector2(0, -1.9f), Vector2.one, c.T.WallTint, 0, unlit);
                 wall.drawMode = SpriteDrawMode.Tiled; wall.size = new Vector2(b - a, 12);
             }
             else Sprite(root, "Underfloor", white, new Vector2(0, -6.9f), new Vector2(b - a, 10), c.T.Underfloor, 0, unlit);
@@ -598,12 +767,7 @@ namespace Biopulse.EditorTools
         {
             var root = new GameObject("Ceiling").transform; root.SetParent(c.Deco); root.position = new Vector3((a + b) / 2, 0);
             Sprite(root, "Slab", white, new Vector2(0, 13.5f), new Vector2(b - a, 10), new Color(.03f, .035f, .05f), -5, unlit);
-            Sprite(root, "Lip", white, new Vector2(0, 8.55f), new Vector2(b - a, .12f), new Color(.15f, .17f, .24f), -4, unlit);
-            for (float x = a; x < b; x += 12)
-            {
-                var lamp = Sprite(root, "Lamp", white, new Vector2(x - (a + b) / 2, 8.4f), new Vector2(2.2f, .1f), new Color(.85f, .95f, 1f), -3, unlit);
-                var p = lamp.gameObject.AddComponent<NeonPulse>(); p.Depth = .05f; p.Flicker = Random.value < .3f;
-            }
+            // The painted mid layer carries the ceiling machinery; this slab only hides what is above it.
         }
 
         private static void Backdrop(Ctx c, float a, float b)
@@ -624,8 +788,12 @@ namespace Biopulse.EditorTools
             var midR = Sprite(bg, "Mid layer", mid, new Vector2((a + b) / 2, c.T.MidY), Vector2.one, c.T.MidTint, -50, unlit);
             midR.drawMode = SpriteDrawMode.Tiled; midR.size = new Vector2(b - a + 40, 12);
             midR.gameObject.AddComponent<NeonParallax>().Factor = c.T.MidFactor;
-            Sprite(bg, "Floor fog", softDot, new Vector2((a + b) / 2, .2f), new Vector2(b - a + 40, 2.2f), NeonPalette.Alpha(c.T.Accent, .07f), -40, unlit);
+            var fog = Sprite(bg, "Floor fog", softDot, new Vector2((a + b) / 2, .2f), new Vector2(b - a + 40, 2.2f), NeonPalette.Alpha(c.T.Accent, .07f), -40, unlit);
+            if (c.Def.Number == 3) fog.gameObject.AddComponent<NeonParallax>().Factor = 1;
         }
+
+        [System.Serializable] private sealed class OverlayItem { public string kind; public float x, z, w, h; }
+        [System.Serializable] private sealed class OverlayFile { public float wrap; public float z0; public OverlayItem[] items; }
 
         private static void PaintedBackdrop(Ctx c, float a, float b)
         {
@@ -634,18 +802,131 @@ namespace Biopulse.EditorTools
             {
                 var sprite = Import($"{Sprites}/{l.File}", l.Ppu, new Vector2(.5f, 0), true);
                 if (sprite == null) { Debug.LogWarning("Missing backdrop " + l.File); continue; }
-                float h = sprite.rect.height / l.Ppu;
+                string stem = l.File.Replace(".png", "");
+                float w = sprite.rect.width / l.Ppu;
                 // Enough strip to cover the level as seen through this layer's parallax, plus margins.
                 float span = (b - a) * Mathf.Max(.2f, Mathf.Abs(1 - l.Factor)) + 80;
                 // Top-anchored bands start where the game camera will hold them (feet ~26% up a 6.4-size view).
                 float bottom = l.AnchorTop ? 3.1f + 6.4f - l.TopInset : l.Bottom;
-                var r = Sprite(bg, l.File.Replace(".png", ""), sprite, new Vector2((a + b) / 2 * (1 - l.Factor) + 6 * l.Factor, bottom),
-                    Vector2.one, l.Tint, l.Order, unlit);
-                r.drawMode = SpriteDrawMode.Tiled; r.tileMode = SpriteTileMode.Continuous; r.size = new Vector2(span, h);
-                var p = r.gameObject.AddComponent<NeonParallax>(); p.Factor = l.Factor; p.FactorY = l.FactorY;
+                var root = Child(stem, bg);
+                root.position = new Vector3((a + b) / 2 * (1 - l.Factor) + 6 * l.Factor, bottom);
+                var p = root.gameObject.AddComponent<NeonParallax>(); p.Factor = l.Factor; p.FactorY = l.FactorY;
+                if (c.Def.Number == 3) p.RepeatWidth = w;
                 p.AnchorTop = l.AnchorTop; p.TopInset = l.TopInset;
+
+                // Living material when the strip has an animation mask (screens / liquid / light shafts).
+                var mat = unlit;
+                var mask = ImportMask($"{Sprites}/{stem}_mask.png");
+                if (mask != null)
+                {
+                    string matPath = $"{Generated}/Backdrop_{stem}.mat";
+                    var m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+                    if (m == null) { m = new Material(Shader.Find("Biopulse/LivingBackdrop")); AssetDatabase.CreateAsset(m, matPath); }
+                    m.shader = Shader.Find("Biopulse/LivingBackdrop");
+                    m.SetTexture("_MaskTex", mask); m.SetFloat("_Seed", l.Order * 1.37f);
+                    EditorUtility.SetDirty(m);
+                    mat = m;
+                }
+                var overlays = LoadOverlays($"{Sprites}/{stem}_overlays.json");
+
+                // Discrete copies instead of one tiled sprite, so animated overlays sit at exact strip coordinates.
+                int n = Mathf.CeilToInt(span / w) + 1;
+                float left = -n * w / 2;
+                for (int i = 0; i < n; i++)
+                {
+                    var r = Sprite(root, $"{stem} {i}", sprite, new Vector2(left + (i + .5f) * w, 0), Vector2.one, l.Tint, l.Order, mat);
+                    if (overlays != null) AddOverlays(r.transform, overlays, w, l.Order, c.T);
+                }
             }
             Sprite(bg, "Floor fog", softDot, new Vector2((a + b) / 2, .2f), new Vector2(b - a + 40, 2.2f), NeonPalette.Alpha(c.T.Accent, .07f), -40, unlit);
+            // Floating dust in the air between the painted hall and the gameplay plane.
+            var dustRoot = Child("Air dust", bg);
+            var dp = dustRoot.gameObject.AddComponent<NeonParallax>(); dp.Factor = 1; dp.FactorY = 1;
+            dustRoot.position = new Vector3(6, 3.5f);
+            var dust = dustRoot.gameObject.AddComponent<NeonMotes>();
+            dust.Mode = NeonMotes.Kind.Dust; dust.Sprite = softDot; dust.Material = unlit; dust.Area = new Vector2(26, 13);
+            dust.Count = 45; dust.Size = .09f; dust.Speed = .5f; dust.SortingOrder = -45;
+            dust.Color = NeonPalette.Alpha(Color.Lerp(c.T.Edge, Color.white, .3f), .35f);
+            if (c.T.Rain)
+            {
+                var rainRoot = Child("Rain", bg);
+                var rp = rainRoot.gameObject.AddComponent<NeonParallax>(); rp.Factor = 1; rp.FactorY = 1;
+                rainRoot.position = new Vector3(6, 3.5f);
+                var rain = rainRoot.gameObject.AddComponent<NeonMotes>();
+                rain.Mode = NeonMotes.Kind.Rain; rain.Sprite = white; rain.Material = unlit; rain.Area = new Vector2(28, 14);
+                rain.Count = 90; rain.Size = .6f; rain.SizeJitter = .4f; rain.Speed = 14; rain.SortingOrder = 55;
+                rain.Color = new Color(.85f, .75f, .95f, .22f);
+                var far = Object.Instantiate(rain.gameObject, bg).GetComponent<NeonMotes>();   // softer far rain behind the roofs
+                far.name = "Rain far"; far.SortingOrder = -60; far.Count = 70; far.Size = .35f; far.Speed = 9; far.Color = new Color(.85f, .7f, .95f, .14f);
+            }
+        }
+
+        private static Texture2D ImportMask(string path)
+        {
+            if (!File.Exists(path)) return null;
+            var ti = (TextureImporter)AssetImporter.GetAtPath(path);
+            if (ti == null) return null;
+            ti.textureType = TextureImporterType.Default; ti.sRGBTexture = false; ti.mipmapEnabled = false;
+            ti.textureCompression = TextureImporterCompression.Uncompressed; ti.maxTextureSize = 4096;
+            ti.wrapMode = TextureWrapMode.Repeat; ti.filterMode = FilterMode.Bilinear; ti.alphaSource = TextureImporterAlphaSource.None;
+            ti.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        private static OverlayFile LoadOverlays(string path)
+        {
+            if (!File.Exists(path)) return null;
+            return JsonUtility.FromJson<OverlayFile>(File.ReadAllText(path));
+        }
+
+        private static void AddOverlays(Transform copy, OverlayFile f, float w, int order, Theme t)
+        {
+            foreach (var it in f.items)
+            {
+                var at = new Vector3(it.x - w / 2, it.z - f.z0, 0);
+                var go = new GameObject(it.kind); go.transform.SetParent(copy, false); go.transform.localPosition = at;
+                switch (it.kind)
+                {
+                    case "bubbles":
+                    {
+                        var m = go.AddComponent<NeonMotes>(); m.Mode = NeonMotes.Kind.Bubbles; m.Sprite = dot; m.Material = unlit;
+                        m.Area = new Vector2(it.w, it.h); m.Count = 12; m.Speed = .45f; m.Size = .1f; m.SortingOrder = order + 2;
+                        m.Color = new Color(.85f, 1f, .55f, .75f);
+                        break;
+                    }
+                    case "specimen_hand":
+                    {
+                        var s = Sprite(go.transform, "Specimen", specimenHand, Vector2.zero, Vector2.one, Color.white, order + 1, unlit);
+                        var bob = s.gameObject.AddComponent<NeonBob>(); bob.Amplitude = .1f; bob.Speed = .9f; bob.Tilt = 5;
+                        break;
+                    }
+                    case "steam":
+                    {
+                        var m = go.AddComponent<NeonMotes>(); m.Mode = NeonMotes.Kind.Steam; m.Sprite = softDot; m.Material = unlit;
+                        m.Area = new Vector2(it.w, 1); m.Count = 9; m.Speed = .55f; m.Size = .32f; m.SortingOrder = order + 2;
+                        m.Color = new Color(.65f, .85f, .8f, .45f);
+                        break;
+                    }
+                    case "alarm":
+                    {
+                        // Rotating red beacon: pulsing lamp + a sweeping beam.
+                        var lampSr = Sprite(go.transform, "Lamp", softDot, Vector2.zero, Vector2.one * .7f, new Color(1f, .3f, .22f, .95f), order + 3, unlit);
+                        var lp = lampSr.gameObject.AddComponent<NeonPulse>(); lp.Speed = 9; lp.Depth = .75f;
+                        var pivot = new GameObject("Beam pivot").transform; pivot.SetParent(go.transform, false);
+                        var beam = Sprite(pivot, "Beam", softDot, new Vector2(0, -1.6f), new Vector2(1.6f, 4.2f), new Color(1f, .25f, .2f, .22f), order + 2, unlit);
+                        var sweep = pivot.gameObject.AddComponent<NeonBob>(); sweep.Amplitude = 0; sweep.Speed = 2.4f; sweep.Tilt = 55;
+                        Sprite(go.transform, "Housing", white, new Vector2(0, .22f), new Vector2(.34f, .16f), new Color(.08f, .08f, .12f), order + 4, unlit);
+                        break;
+                    }
+                    case "spark":
+                    {
+                        var m = go.AddComponent<NeonMotes>(); m.Mode = NeonMotes.Kind.Sparks; m.Sprite = dot; m.Material = unlit;
+                        m.Area = new Vector2(it.w, .1f); m.Count = 5; m.Size = .06f; m.SortingOrder = order + 2;
+                        m.Color = new Color(1f, .8f, .45f, 1f);
+                        break;
+                    }
+                }
+            }
         }
 
         private static void AmbientLights(Ctx c, float a, float b)
@@ -683,9 +964,9 @@ namespace Biopulse.EditorTools
 
             var trail = new GameObject("Trail").AddComponent<TrailRenderer>(); trail.transform.SetParent(go.transform, false);
             trail.time = .22f; trail.minVertexDistance = .05f; trail.sharedMaterial = unlit; trail.sortingOrder = 9;
-            trail.widthCurve = new AnimationCurve(new Keyframe(0, .55f), new Keyframe(1, 0));
-            var tg = new Gradient(); tg.SetKeys(new[] { new GradientColorKey(NeonPalette.Flex, 0), new GradientColorKey(NeonPalette.Extend, 1) },
-                new[] { new GradientAlphaKey(.35f, 0), new GradientAlphaKey(0, 1) });
+            trail.widthCurve = new AnimationCurve(new Keyframe(0, .3f), new Keyframe(1, 0));
+            var tg = new Gradient(); tg.SetKeys(new[] { new GradientColorKey(new Color(1f, .8f, .5f), 0), new GradientColorKey(new Color(1f, .6f, .35f), 1) },
+                new[] { new GradientAlphaKey(.18f, 0), new GradientAlphaKey(0, 1) });
             trail.colorGradient = tg;
 
             var cable = new GameObject("Bionic arm cable").AddComponent<LineRenderer>(); cable.transform.SetParent(go.transform, false);
@@ -770,6 +1051,7 @@ namespace Biopulse.EditorTools
         {
             var list = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene($"{Scenes}/{MenuScene}.unity", true) };
             foreach (var l in Levels) list.Add(new EditorBuildSettingsScene($"{Scenes}/{l.Scene}.unity", true));
+            list.Add(new EditorBuildSettingsScene($"{Scenes}/{TutorialLevel.Scene}.unity", true));
             foreach (var s in EditorBuildSettings.scenes)
                 if (!list.Exists(x => x.path == s.path)) list.Add(s);
             EditorBuildSettings.scenes = list.ToArray();

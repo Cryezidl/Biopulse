@@ -39,6 +39,8 @@ namespace Biopulse.Input
         public bool AllowBackgroundReplayInEditor { get; set; }
         // Unattended verification runs (autopilot build) may keep scripted input flowing without focus. Never set for players.
         public bool AllowUnfocusedScriptedInput { get; set; }
+        // The tutorial's keyboard presets describe processed effort, including after calibration.
+        public bool NormalizeKeyboardAmplitudes { get; set; }
         private bool Scripted => ScriptedFlex >= 0 || ScriptedExtend >= 0;
         private bool BackgroundReplay => (Application.isEditor && AllowBackgroundReplayInEditor && source is ReplayEmgSource) ||
             ((Application.isEditor || AllowUnfocusedScriptedInput) && Scripted);
@@ -103,8 +105,8 @@ namespace Biopulse.Input
                     if (!anyHeld) waitForRelease = false;
                     emulator.Publish(now, 0, 0);
                 }
-                else emulator.Publish(now, flexHeld ? (touchFlex >= 0 ? touchFlex : flexAmplitude) : 0,
-                    extendHeld ? (touchExtend >= 0 ? touchExtend : extendAmplitude) : 0);
+                else emulator.Publish(now, flexHeld ? (touchFlex >= 0 ? touchFlex : KeyboardAmplitude(flexAmplitude, true)) : 0,
+                    extendHeld ? (touchExtend >= 0 ? touchExtend : KeyboardAmplitude(extendAmplitude, false)) : 0);
             }
             int budget = 128;
             while (budget-- > 0 && source.TryRead(out var sample))
@@ -135,10 +137,16 @@ namespace Biopulse.Input
             return new Rect(safe.x + gap + (flex ? 0 : width + gap), safe.y + gap, width, height);
         }
         private void ClearTouches() { flexTouchId = extendTouchId = -1; }
+        private float KeyboardAmplitude(float effort, bool flex)
+        {
+            if (!NormalizeKeyboardAmplitudes || CurrentCalibration == null) return effort;
+            return flex ? Mathf.Lerp(CurrentCalibration.FlexBaseline, CurrentCalibration.FlexReference, effort) :
+                Mathf.Lerp(CurrentCalibration.ExtendBaseline, CurrentCalibration.ExtendReference, effort);
+        }
         private void ReadControls()
         {
             flexHeld = Keyboard.current?.fKey.isPressed == true;
-            extendHeld = Keyboard.current?.rKey.isPressed == true;
+            extendHeld = Keyboard.current?.rKey.isPressed == true || Keyboard.current?.pKey.isPressed == true;
             // Emulator amplitude presets (weak / medium / strong) so proportionality is testable from a keyboard.
             var kb = Keyboard.current;
             if (kb != null)
@@ -172,8 +180,8 @@ namespace Biopulse.Input
                 if (kb.qKey.isPressed) kf = .3f; if (kb.wKey.isPressed) kf = .6f; if (kb.eKey.isPressed) kf = 1f;
                 if (kb.aKey.isPressed) ke = .3f; if (kb.sKey.isPressed || kb.spaceKey.isPressed) ke = .6f; if (kb.dKey.isPressed) ke = 1f;
                 if (kb.bKey.isPressed) { kf = .7f; ke = .7f; }
-                if (kf >= 0) { flexHeld = true; touchFlex = kf; }
-                if (ke >= 0) { extendHeld = true; touchExtend = ke; }
+                if (kf >= 0) { flexHeld = true; touchFlex = KeyboardAmplitude(kf, true); }
+                if (ke >= 0) { extendHeld = true; touchExtend = KeyboardAmplitude(ke, false); }
             }
             if (Touch.activeTouches.Count == 0 && Mouse.current?.leftButton.isPressed == true)
             {

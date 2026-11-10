@@ -44,11 +44,13 @@ namespace Biopulse.Neon
             tagline.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(118, -240), new Vector2(1400, 40));
 
             int n = Items.Length;
+            float rowStep = n > 4 ? 94 : 112;
+            float rowHeight = n > 4 ? 84 : 96;
             rows = new Image[n]; titles = new Text[n]; subs = new Text[n]; rowRects = new RectTransform[n];
             for (int i = 0; i < n; i++)
             {
                 rows[i] = NeonUi.Panel("Row " + i, root, NeonPalette.Panel);
-                rowRects[i] = rows[i].rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(110, -320 - i * 112), new Vector2(760, 96));
+                rowRects[i] = rows[i].rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(110, -320 - i * rowStep), new Vector2(760, rowHeight));
                 titles[i] = NeonUi.Label("Title", rows[i].transform, Font, 38, Color.white, TextAnchor.MiddleLeft, Items[i].Title);
                 titles[i].rectTransform.Place(new Vector2(0, .5f), new Vector2(0, .5f), new Vector2(34, 14), new Vector2(700, 50));
                 subs[i] = NeonUi.Label("Sub", rows[i].transform, Font, 22, NeonPalette.Muted, TextAnchor.MiddleLeft);
@@ -56,7 +58,7 @@ namespace Biopulse.Neon
             }
             var help = NeonUi.Label("Help", root, Font, 26, NeonPalette.Text, TextAnchor.MiddleLeft,
                 "<color=#26F2FF>С</color> — следующий пункт     <color=#FF38B8>Р</color> — выбрать");
-            help.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(116, -320 - n * 112 - 10), new Vector2(900, 40));
+            help.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(116, -320 - n * rowStep - 10), new Vector2(900, 40));
 
             channels = new NeonChannelPanels(root, Font);
             channels.HideKeyboardHelp();

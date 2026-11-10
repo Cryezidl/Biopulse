@@ -36,9 +36,18 @@ namespace Biopulse.Neon
         public float StartX, FinishX = 100;
         public float KillY = -5;
         public List<float> CheckpointXs = new List<float>();
+        public bool Endless;
+        public bool IsTutorial;
+        public NeonTutorial Tutorial;
+        public bool TutorialPaused => Tutorial != null && Tutorial.IsPaused;
+        public bool IsEndless => Endless && LevelNumber == 3;
+        public float Distance { get; private set; }
+        private float distanceOffset;
+        public void AddDistanceOffset(float amount) { distanceOffset += amount; }
 
         public NeonSessionState State { get; private set; } = NeonSessionState.Intro;
         public int Score { get; private set; }
+        public int CoinsCollected { get; private set; }
         public int Combo { get; private set; }
         public int Deaths { get; private set; }
         public float ActiveSeconds { get; private set; }
@@ -60,7 +69,7 @@ namespace Biopulse.Neon
         private static readonly string[] BigJump = { "ВЖУХ!", "ВОТ ЭТО ТОЛЧОК!", "ЛЕЧУ-У-У!", "ГРАВИТАЦИЯ? НЕ СЛЫШАЛ." };
         private static readonly string[] SmallJump = { "Аккуратненько.", "Хоп!", "Мини-прыжок!", "Ювелирно." };
         private static readonly string[] GrabLines = { "ПОЙМАЛ!", "ДЕРЖУ!", "ЦЕПКО!", "Есть контакт!" };
-        private static readonly string[] HangLines = { "Расслабься — я держу.", "Виси спокойно. Р — отпустить.", "Отдыхай, я крепкая." };
+        private static readonly string[] HangLines = { "Мышцы в покой — хват держится.", "Р — отпустить. Робот не ждёт!", "Держусь! Но долго не висим." };
         private static readonly string[] ReleaseLines = { "ОТПУСКАЮ!", "ПОЛЕТЕЛИ!", "Йе-е-ей!" };
         private static readonly string[] Deaths_ = { "Ой. Ещё разок?", "Я в порядке. А ты?", "Это была разведка.", "Засчитаем как тренировку." };
         private static readonly string[] Mopped = { "НАС ОТПОЛИРОВАЛИ!", "Меня протёрли… насухо.", "Он слишком чистоплотный!" };
@@ -79,9 +88,10 @@ namespace Biopulse.Neon
             StartX = respawn.x;
             Runner.SetSuspended(true);
             if (Input != null) { Input.IntentRecognized += OnIntent; Input.ShowDiagnostics = false; Input.ShowTouchControls = false; }
+            if (Input != null && IsTutorial) Input.NormalizeKeyboardAmplitudes = true;
             Cam?.Snap();
             Chaser?.ResetBehind();
-            Hud?.ShowTitle($"УРОВЕНЬ {LevelNumber}", Title, Subtitle);
+            Hud?.ShowTitle(IsTutorial ? "ОБУЧЕНИЕ" : $"УРОВЕНЬ {LevelNumber}", Title, Subtitle);
             lastJumpCount = Runner.JumpCount;
         }
 
@@ -89,11 +99,13 @@ namespace Biopulse.Neon
 
         // Hit-stop: a few real-time milliseconds of near-freeze that sells the moment the hook bites.
         private float hitstopUntil = -1;
-        public void HitStop(float seconds, float scale = .12f) { hitstopUntil = Time.unscaledTime + seconds; Time.timeScale = scale; }
+        public void HitStop(float seconds, float scale = .12f) { if (TutorialPaused) return; hitstopUntil = Time.unscaledTime + seconds; Time.timeScale = scale; }
+        public void ClearHitStop() { hitstopUntil = -1; Time.timeScale = 1; }
         private void OnDisable() { Time.timeScale = 1; }
 
         private void UpdateDynamics()
         {
+            if (TutorialPaused) return;
             if (hitstopUntil > 0 && Time.unscaledTime >= hitstopUntil) { hitstopUntil = -1; Time.timeScale = 1; }
             if (Cam == null || Runner == null || Runner.Body == null) return;
             Vector2 v = Runner.Body.linearVelocity;
@@ -110,6 +122,7 @@ namespace Biopulse.Neon
             stateTime += dt;
             quipCooldown -= dt;
             HandleInputLoss();
+            if (TutorialPaused) { NeonAudio.Hum(0, 0); return; }
             UpdateDynamics();
             if (State != NeonSessionState.Playing) NeonAudio.Hum(0, 0);
             switch (State)
@@ -118,6 +131,7 @@ namespace Biopulse.Neon
                     if (stateTime > 2.4f && InputReady()) { SetState(NeonSessionState.Playing); Runner.SetSuspended(false); Router.enabled = true; }
                     break;
                 case NeonSessionState.Playing:
+                    if (IsEndless) Distance = Mathf.Max(Distance, distanceOffset + Runner.Body.position.x - StartX);
                     ElapsedSeconds += dt;
                     if (!Runner.IsSuspended)
                     {
@@ -132,7 +146,11 @@ namespace Biopulse.Neon
                     if (Runner.Body.position.y < KillY) Kill(NeonDeath.Fall);
                     break;
                 case NeonSessionState.Dying:
-                    if (stateTime > 1.15f) Respawn();
+                    if (stateTime > 1.15f)
+                    {
+                        if (IsEndless) EndRun();
+                        else Respawn();
+                    }
                     break;
             }
         }
@@ -218,7 +236,7 @@ namespace Biopulse.Neon
             {
                 var p = Input.Pipeline;
                 restingGrabbed = p != null && p.State == EmgIntentKind.Rest ? restingGrabbed + dt : 0;
-                if (restingGrabbed > 1.1f && !saidHangHint) { saidHangHint = true; Quip(Pick(HangLines), NeonPalette.Flex, true); }
+                if (restingGrabbed > 1.1f && !saidHangHint) { saidHangHint = true; Quip(IsTutorial ? "Захват держится сам. Р — отпустить." : Pick(HangLines), NeonPalette.Flex, true); }
             }
             wasGrabbed = grabbed;
         }
@@ -231,7 +249,7 @@ namespace Biopulse.Neon
                 else if (intent.Kind == EmgIntentKind.Extend) { NeonAudio.Play(Sfx.UiConfirm); ConfirmResults(); }
                 return;
             }
-            if (State == NeonSessionState.Playing && intent.Kind == EmgIntentKind.Coactivate && (Locks == null || !Locks.IsEngaged))
+            if (!IsEndless && State == NeonSessionState.Playing && intent.Kind == EmgIntentKind.Coactivate && (Locks == null || !Locks.IsEngaged))
                 Quip("Обе сразу? Это для терминалов!", NeonPalette.Combo, true);
             if (State == NeonSessionState.Playing && intent.Kind == EmgIntentKind.Flex && !Runner.IsGrabbed && Grab != null && Grab.AimTarget == null && quipCooldown <= 0)
                 Quip("Тут не за что схватиться…", NeonPalette.Flex);
@@ -247,6 +265,7 @@ namespace Biopulse.Neon
         private static string Pick(string[] lines) => lines[Random.Range(0, lines.Length)];
 
         public void EnterZone(NeonTimingZone zone) { if (!zones.Contains(zone)) zones.Add(zone); }
+        public void ForgetZone(NeonTimingZone zone) { zones.Remove(zone); }
         public void ExitZone(NeonTimingZone zone, bool cleared)
         {
             zones.Remove(zone);
@@ -261,11 +280,22 @@ namespace Biopulse.Neon
 
         public void ReachCheckpoint(NeonCheckpoint checkpoint)
         {
+            if (IsEndless) return;
             respawn = checkpoint.SpawnPoint;
             NeonAudio.Play(Sfx.Checkpoint);
             Fx?.Ring(checkpoint.transform.position + Vector3.up, NeonPalette.Success, 3.5f, .6f);
             Fx?.Sparks((Vector2)checkpoint.transform.position + Vector2.up * 1.5f, NeonPalette.Success, 24, 6);
             Hud?.Toast("КОНТРОЛЬНАЯ ТОЧКА", NeonPalette.Success);
+        }
+
+        public void CollectCoin(Vector2 position)
+        {
+            if (State != NeonSessionState.Playing) return;
+            CoinsCollected++; Score += 25;
+            NeonProgress.AddCoin();
+            NeonAudio.Play(Sfx.Score, 1.7f, .7f);
+            Fx?.Sparks(position, NeonPalette.Gold, 10, 3);
+            Hud?.Pop(position, "+1", NeonPalette.Gold);
         }
 
         public void TerminalOpened(NeonTerminalVisual terminal)
@@ -314,11 +344,12 @@ namespace Biopulse.Neon
             Fx?.Ring(respawn, NeonPalette.Flex, 2.5f, .45f);
             SetState(NeonSessionState.Playing);
             Router.enabled = true;
+            Tutorial?.RetryFrom(respawn.x);
         }
 
         public void Finish()
         {
-            if (State != NeonSessionState.Playing) return;
+            if (IsEndless || State != NeonSessionState.Playing) return;
             SetState(NeonSessionState.Results);
             Router.enabled = false;
             Runner.SetSuspended(true);
@@ -326,7 +357,15 @@ namespace Biopulse.Neon
             NeonAudio.Play(Sfx.Unlock, 1.25f);
             Cam?.Punch(.8f);
             ResultsFocus = 0;
-            NeonProgress.Record(LevelNumber, Score, Deaths, ElapsedSeconds, TimingShare);
+            if (!IsTutorial) NeonProgress.Record(LevelNumber, Score, Deaths, ElapsedSeconds, TimingShare);
+            Hud?.ShowResults(this);
+        }
+
+        private void EndRun()
+        {
+            SetState(NeonSessionState.Results);
+            ResultsFocus = 0;
+            NeonProgress.RecordEndless(Score, Distance, ElapsedSeconds);
             Hud?.ShowResults(this);
         }
 
@@ -335,6 +374,11 @@ namespace Biopulse.Neon
 
         private void ConfirmResults()
         {
+            if (IsEndless)
+            {
+                SceneManager.LoadScene(ResultsFocus == 0 ? SceneManager.GetActiveScene().name : "Neon_Menu");
+                return;
+            }
             string target = ResultsFocus == 0 && !string.IsNullOrEmpty(NextScene) ? NextScene : SceneManager.GetActiveScene().name;
             SceneManager.LoadScene(target);
         }
@@ -343,6 +387,23 @@ namespace Biopulse.Neon
     // Local progress only; no network, no personal data (spec §9).
     public static class NeonProgress
     {
+        public const string CoinsKey = "biopulse.coins.total";
+        public static int TotalCoins => PlayerPrefs.GetInt(CoinsKey, 0);
+        public static void AddCoin()
+        {
+            PlayerPrefs.SetInt(CoinsKey, TotalCoins + 1);
+            PlayerPrefs.Save();
+        }
+        private const string EndlessKey = "biopulse.rooftops.endless";
+        public static float BestEndlessDistance => PlayerPrefs.GetFloat(EndlessKey + ".distance", 0);
+        public static int BestEndlessScore => PlayerPrefs.GetInt(EndlessKey + ".score", 0);
+        public static void RecordEndless(int score, float distance, float seconds)
+        {
+            PlayerPrefs.SetFloat(EndlessKey + ".distance", Mathf.Max(distance, BestEndlessDistance));
+            PlayerPrefs.SetInt(EndlessKey + ".score", Mathf.Max(score, BestEndlessScore));
+            PlayerPrefs.SetFloat(EndlessKey + ".lastSeconds", seconds);
+            PlayerPrefs.Save();
+        }
         public static void Record(int level, int score, int deaths, float seconds, float timingShare)
         {
             string k = "biopulse.level" + level;

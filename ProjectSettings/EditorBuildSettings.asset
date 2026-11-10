@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Neon_L3_Rooftops.unity
     guid: c71334e1290375d4ca66f9c43f050d95
   - enabled: 1
+    path: Assets/Scenes/Neon_Tutorial.unity
+    guid: 01f585b4d024eeb43833ba5f9c17102b
+  - enabled: 1
     path: Assets/Scenes/CalibrationTutorial.unity
     guid: 3768f1a2be73aaa42b4a087098ac9798
   m_configObjects:

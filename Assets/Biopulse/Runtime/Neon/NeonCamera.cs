@@ -33,6 +33,11 @@ namespace Biopulse.Neon
         }
 
         public void Shake(float amount) => trauma = Mathf.Clamp01(Mathf.Max(trauma, amount));
+        public void ShiftOrigin(float distance)
+        {
+            focus.x -= distance;
+            transform.position -= Vector3.right * distance;
+        }
         public void Punch(float amount) => punch = Mathf.Clamp(punch + amount, -1.2f, 1.2f);
 
         private void LateUpdate()

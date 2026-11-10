@@ -14,12 +14,16 @@ namespace Biopulse.Neon
         public float Gravity = 29.43f;
         public float AmplitudeBoost = 1.08f;   // pipeline smoothing captures slightly less than the target
         private readonly List<NeonTimingZone> zones = new List<NeonTimingZone>();
-        private readonly HashSet<NeonTimingZone> handled = new HashSet<NeonTimingZone>();
+        private readonly Dictionary<NeonTimingZone, string> handled = new Dictionary<NeonTimingZone, string>();
+        private readonly List<NeonTimingZone> staleHandled = new List<NeonTimingZone>();
         private GrabTarget[] targets = new GrabTarget[0];
         private float flex, extend, pulseUntil, grabbedFor, restUntil;
         private int lastDeaths;
+        private int endlessRevision = -1;
+        private NeonEndlessRooftops endless;
 
         public string LastAction { get; private set; } = "";
+        private float InputClock => Session != null && Session.IsTutorial ? Time.unscaledTime : Time.time;
 
         // Unattended verification: Player.exe -autopilot [-autopilotLog path] plays every level and writes a report.
         public static bool CommandLine => System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-autopilot") >= 0;
@@ -91,6 +95,7 @@ namespace Biopulse.Neon
 
         private void Start()
         {
+            if (Session != null && Session.IsEndless) endless = FindFirstObjectByType<NeonEndlessRooftops>();
             zones.AddRange(FindObjectsByType<NeonTimingZone>(FindObjectsSortMode.None));
             targets = FindObjectsByType<GrabTarget>(FindObjectsSortMode.None);
             zones.Sort((a, b) => a.TargetX.CompareTo(b.TargetX));
@@ -104,14 +109,31 @@ namespace Biopulse.Neon
             var input = Session.Input;
             if (!Active) { if (input.ScriptedFlex >= 0 || input.ScriptedExtend >= 0) input.ScriptedFlex = input.ScriptedExtend = -1; return; }
 
+            if (endless != null && endless.Revision != endlessRevision)
+            {
+                endlessRevision = endless.Revision;
+                zones.Clear();
+                zones.AddRange(FindObjectsByType<NeonTimingZone>(FindObjectsSortMode.None));
+                targets = FindObjectsByType<GrabTarget>(FindObjectsSortMode.None);
+                staleHandled.Clear();
+                foreach (var entry in handled)
+                    if (entry.Key == null || !entry.Key.isActiveAndEnabled || entry.Key.Id != entry.Value) staleHandled.Add(entry.Key);
+                foreach (var zone in staleHandled) handled.Remove(zone);
+                zones.Sort((a, b) => a.TargetX.CompareTo(b.TargetX));
+            }
+
             if (Session.Deaths != lastDeaths) { lastDeaths = Session.Deaths; handled.Clear(); }
-            if (Time.time >= pulseUntil) { flex = extend = 0; if (Time.time >= restUntil) Decide(); }
+            if (InputClock >= pulseUntil) { flex = extend = 0; if (InputClock >= restUntil) Decide(); }
             input.ScriptedFlex = flex; input.ScriptedExtend = extend;
         }
 
         private void Pulse(float f, float e, float seconds, string what)
         {
-            flex = f; extend = e; pulseUntil = Time.time + seconds; restUntil = pulseUntil + .08f; LastAction = what;
+            // Decisions use normalized amplitudes; emulator channels contain raw, calibrated values.
+            var calibration = Session.Input.CurrentCalibration;
+            flex = f > 0 && calibration != null ? Mathf.Lerp(calibration.FlexBaseline, calibration.FlexReference, f) : f;
+            extend = e > 0 && calibration != null ? Mathf.Lerp(calibration.ExtendBaseline, calibration.ExtendReference, e) : e;
+            pulseUntil = InputClock + seconds; restUntil = pulseUntil + .08f; LastAction = what;
         }
 
         private void Decide()
@@ -121,6 +143,25 @@ namespace Biopulse.Neon
             // Technical pause: behave like a player — rest, then one short Р to continue.
             if (pipeline != null && pipeline.ResumeRequired)
             { if (!pipeline.WaitingForRest && pipeline.Frame.IsValid) Pulse(0, .5f, .12f, "resume"); return; }
+            var tutorial = Session.Tutorial;
+            if (tutorial != null && tutorial.IsPaused)
+            {
+                if (!tutorial.RestArmed) return;
+                switch (tutorial.CurrentKind)
+                {
+                    case NeonLessonKind.LowJump: Pulse(0, .36f, .14f, "learn low jump"); break;
+                    case NeonLessonKind.MidJump: Pulse(0, .64f, .14f, "learn mid jump"); break;
+                    case NeonLessonKind.HighJump: Pulse(0, .97f, .14f, "learn high jump"); break;
+                    case NeonLessonKind.Gap: Pulse(0, .65f, .14f, "learn gap"); break;
+                    case NeonLessonKind.Grab: Pulse(.98f, 0, .22f, "learn grab"); break;
+                    case NeonLessonKind.Release: Pulse(0, .5f, .14f, "learn release"); break;
+                    case NeonLessonKind.Lock:
+                        if (Session.Locks.Current != null && Session.Locks.Current.Challenge.State == LockState.Ready)
+                            Pulse(.7f, .7f, .75f, "learn lock");
+                        break;
+                }
+                return;
+            }
             var runner = Session.Runner;
             if (runner == null || runner.IsSuspended) return;
             float x = runner.Body.position.x;
@@ -144,7 +185,7 @@ namespace Biopulse.Neon
 
             NeonTimingZone next = null;
             foreach (var z in zones)
-                if (!handled.Contains(z) && (z.TargetX > x - .5f || (z.Challenge == NeonChallenge.Grab && z.RightEdge - 1 > x)))
+                if (!handled.ContainsKey(z) && (z.TargetX > x - .5f || (z.Challenge == NeonChallenge.Grab && z.RightEdge - 1 > x)))
                 { next = z; break; }
             if (next == null) return;
 
@@ -158,12 +199,12 @@ namespace Biopulse.Neon
                     float width = next.RightEdge - .6f - next.TargetX;
                     float a = width > 3.2f ? .85f : .5f;
                     if (runner.IsGrounded && x >= next.TargetX - .45f - speed * .05f)
-                    { Pulse(0, Mathf.Clamp01(a * AmplitudeBoost), .1f, $"gap jump {a:0.00}"); handled.Add(next); }
+                    { Pulse(0, Mathf.Clamp01(a * AmplitudeBoost), .1f, $"gap jump {a:0.00}"); handled[next] = next.Id; }
                     break;
                 }
                 case NeonChallenge.Grab:
                 {
-                    if (x > next.RightEdge - 1f && runner.IsGrounded) { handled.Add(next); break; }
+                    if (x > next.RightEdge - 1f && runner.IsGrounded) { handled[next] = next.Id; break; }
                     // Reach for the nearest bar ahead once it is comfortably inside maximum reach.
                     foreach (var t in targets)
                     {
@@ -174,7 +215,7 @@ namespace Biopulse.Neon
                     break;
                 }
                 case NeonChallenge.Lock:
-                    if (x > next.TargetX + .5f) handled.Add(next);
+                    if (x > next.TargetX + .5f) handled[next] = next.Id;
                     break;
             }
         }
@@ -186,7 +227,7 @@ namespace Biopulse.Neon
             float takeoff = zone.TargetX - speed * (v / Gravity) * .9f - speed * .05f;
             if (!runner.IsGrounded || x < takeoff) return;
             Pulse(0, Mathf.Clamp01(amplitude * AmplitudeBoost), .1f, $"jump {amplitude:0.00}");
-            handled.Add(zone);
+            handled[zone] = zone.Id;
         }
     }
 }

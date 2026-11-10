@@ -1,0 +1,483 @@
+fileFormatVersion: 2
+guid: dc940aa2f9d1c1e448b3fb33b6daa307
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3987306599614400036
+    second: R_Far_mask_0
+  - first:
+      213: 3448456972535685679
+    second: R_Far_mask_1
+  - first:
+      213: 6698073968248460149
+    second: R_Far_mask_2
+  - first:
+      213: -1001800566097679313
+    second: R_Far_mask_3
+  - first:
+      213: 6330938980956106681
+    second: R_Far_mask_4
+  - first:
+      213: -5063238340940444188
+    second: R_Far_mask_5
+  - first:
+      213: -2895257089688148512
+    second: R_Far_mask_6
+  - first:
+      213: -151610431228475248
+    second: R_Far_mask_7
+  - first:
+      213: 8890994491531432069
+    second: R_Far_mask_8
+  - first:
+      213: 4252279361207269943
+    second: R_Far_mask_9
+  - first:
+      213: 8228326497621583092
+    second: R_Far_mask_10
+  - first:
+      213: -9168055719416267380
+    second: R_Far_mask_11
+  - first:
+      213: -3905958103978825964
+    second: R_Far_mask_12
+  - first:
+      213: 2878461691109702632
+    second: R_Far_mask_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 0
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 0
+  alphaIsTransparency: 0
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: R_Far_mask_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 160
+        height: 974
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42646980a32c55730800000000000000
+      internalID: 3987306599614400036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_1
+      rect:
+        serializedVersion: 2
+        x: 271
+        y: 0
+        width: 253
+        height: 829
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f22653788516bdf20800000000000000
+      internalID: 3448456972535685679
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_2
+      rect:
+        serializedVersion: 2
+        x: 605
+        y: 0
+        width: 230
+        height: 1071
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5739db449c654fc50800000000000000
+      internalID: 6698073968248460149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_3
+      rect:
+        serializedVersion: 2
+        x: 911
+        y: 0
+        width: 161
+        height: 971
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2c66f161b3e812f0800000000000000
+      internalID: -1001800566097679313
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_4
+      rect:
+        serializedVersion: 2
+        x: 1162
+        y: 0
+        width: 238
+        height: 1051
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bfef8ed5730cd750800000000000000
+      internalID: 6330938980956106681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_5
+      rect:
+        serializedVersion: 2
+        x: 1455
+        y: 0
+        width: 125
+        height: 880
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ed4b1b1e83cbb9b0800000000000000
+      internalID: -5063238340940444188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_6
+      rect:
+        serializedVersion: 2
+        x: 1661
+        y: 0
+        width: 146
+        height: 844
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e5e4b3440bf1d7d0800000000000000
+      internalID: -2895257089688148512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_7
+      rect:
+        serializedVersion: 2
+        x: 1872
+        y: 0
+        width: 166
+        height: 793
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0980266bd1f55edf0800000000000000
+      internalID: -151610431228475248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_8
+      rect:
+        serializedVersion: 2
+        x: 2114
+        y: 0
+        width: 547
+        height: 1120
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5809faf2268236b70800000000000000
+      internalID: 8890994491531432069
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_9
+      rect:
+        serializedVersion: 2
+        x: 2723
+        y: 0
+        width: 129
+        height: 964
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73afb7aac81230b30800000000000000
+      internalID: 4252279361207269943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_10
+      rect:
+        serializedVersion: 2
+        x: 2967
+        y: 0
+        width: 205
+        height: 757
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f42ba2aa53e03270800000000000000
+      internalID: 8228326497621583092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_11
+      rect:
+        serializedVersion: 2
+        x: 3275
+        y: 0
+        width: 139
+        height: 655
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8d743bc5e584c080800000000000000
+      internalID: -9168055719416267380
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_12
+      rect:
+        serializedVersion: 2
+        x: 3499
+        y: 0
+        width: 241
+        height: 658
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 417a8c09ccf3bc9c0800000000000000
+      internalID: -3905958103978825964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: R_Far_mask_13
+      rect:
+        serializedVersion: 2
+        x: 3824
+        y: 0
+        width: 16
+        height: 223
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ebf92648a952f720800000000000000
+      internalID: 2878461691109702632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      R_Far_mask_0: 3987306599614400036
+      R_Far_mask_1: 3448456972535685679
+      R_Far_mask_10: 8228326497621583092
+      R_Far_mask_11: -9168055719416267380
+      R_Far_mask_12: -3905958103978825964
+      R_Far_mask_13: 2878461691109702632
+      R_Far_mask_2: 6698073968248460149
+      R_Far_mask_3: -1001800566097679313
+      R_Far_mask_4: 6330938980956106681
+      R_Far_mask_5: -5063238340940444188
+      R_Far_mask_6: -2895257089688148512
+      R_Far_mask_7: -151610431228475248
+      R_Far_mask_8: 8890994491531432069
+      R_Far_mask_9: 4252279361207269943
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

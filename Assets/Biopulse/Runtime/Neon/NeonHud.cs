@@ -15,14 +15,17 @@ namespace Biopulse.Neon
 
         private NeonChannelPanels channels;
         private Image hintPanel; private Text hintText; private string lastHint; private float hintPop;
-        private Text levelLabel, scoreText, comboText;
+        private Text levelLabel, scoreText, comboText, coinText;
         private RectTransform progressTrack, progressRunner, progressChaser;
         private RectTransform lockRoot; private Image lockFill; private Text lockText;
         private Image flash; private float flashAlpha;
         private RectTransform titleRoot; private CanvasGroup titleGroup; private Text titleSmall, titleBig, titleSub; private float titleTime = -1;
         private Text toast; private float toastTime;
         private RectTransform lostRoot; private Text lostText;
-        private RectTransform resultsRoot; private Text resultsStats; private Image[] resultButtons; private Text[] resultLabels;
+        private RectTransform resultsRoot; private Text resultsStats, resultsTitle, distanceText; private Image[] resultButtons; private Text[] resultLabels;
+        private RectTransform lessonRoot;
+        private CanvasGroup lessonGroup;
+        private Text lessonNumber, lessonTitle, lessonBody, lessonAction, lessonStatus;
         private readonly Bubble[] bubbles = new Bubble[6];
         private readonly PopText[] pops = new PopText[10];
         private int nextBubble, nextPop;
@@ -57,6 +60,9 @@ namespace Biopulse.Neon
                 .Place(new Vector2(0, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(20, 20));
             progressRunner = NeonUi.Panel("Runner dot", track.transform, NeonPalette.Flex, NeonArt.Dot).rectTransform
                 .Place(new Vector2(0, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(26, 26));
+            distanceText = NeonUi.Label("Distance", tl.transform, Font, 25, NeonPalette.Gold, TextAnchor.UpperLeft);
+            distanceText.rectTransform.Place(new Vector2(0, 0), new Vector2(0, 0), new Vector2(22, 10), new Vector2(576, 32));
+            distanceText.gameObject.SetActive(false);
 
             // Top-right: score & combo.
             scoreText = NeonUi.Label("Score", root, Font, 58, NeonPalette.Text, TextAnchor.UpperRight, "0");
@@ -64,6 +70,8 @@ namespace Biopulse.Neon
             scoreText.Glow(NeonPalette.Alpha(NeonPalette.Flex, .5f), 3);
             comboText = NeonUi.Label("Combo", root, Font, 28, NeonPalette.Gold, TextAnchor.UpperRight);
             comboText.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-36, -92), new Vector2(500, 40));
+            coinText = NeonUi.Label("Coins", root, Font, 26, NeonPalette.Gold, TextAnchor.UpperRight);
+            coinText.rectTransform.Place(new Vector2(1, 1), new Vector2(1, 1), new Vector2(-36, -138), new Vector2(500, 36));
 
             // Top-centre: contextual hint chip.
             hintPanel = NeonUi.Panel("Hint", root, NeonPalette.Alpha(NeonPalette.Panel, .85f));
@@ -126,6 +134,30 @@ namespace Biopulse.Neon
             titleSub.rectTransform.Place(new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, -40), new Vector2(1600, 50));
             titleRoot.gameObject.SetActive(false);
 
+            // Teaching card stays above the action and leaves both channel panels available.
+            lessonRoot = NeonUi.Node("Tutorial lesson", root).Stretch();
+            lessonGroup = lessonRoot.gameObject.AddComponent<CanvasGroup>();
+            lessonGroup.blocksRaycasts = false;
+            var lessonDim = NeonUi.Panel("Dim", lessonRoot, new Color(0, 0, 0, .22f), NeonArt.White);
+            lessonDim.rectTransform.Stretch();
+            var card = NeonUi.Panel("Lesson card", lessonRoot, NeonPalette.Alpha(NeonPalette.Panel, .97f));
+            card.rectTransform.Place(new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -145), new Vector2(1060, 370));
+            var stripe = NeonUi.Panel("Accent", card.transform, NeonPalette.Flex, NeonArt.White);
+            stripe.rectTransform.Place(new Vector2(0, .5f), new Vector2(0, .5f), Vector2.zero, new Vector2(5, 330));
+            lessonNumber = NeonUi.Label("Step", card.transform, Font, 23, NeonPalette.Flex, TextAnchor.UpperLeft);
+            lessonNumber.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(36, -25), new Vector2(990, 35));
+            lessonTitle = NeonUi.Label("Title", card.transform, Font, 44, Color.white, TextAnchor.UpperLeft);
+            lessonTitle.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(36, -67), new Vector2(990, 65));
+            lessonBody = NeonUi.Label("Explanation", card.transform, Font, 28, NeonPalette.Text, TextAnchor.UpperLeft);
+            lessonBody.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(36, -138), new Vector2(990, 91));
+            lessonBody.horizontalOverflow = HorizontalWrapMode.Wrap;
+            lessonAction = NeonUi.Label("Action", card.transform, Font, 30, NeonPalette.Extend, TextAnchor.UpperLeft);
+            lessonAction.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(36, -237), new Vector2(990, 65));
+            lessonAction.horizontalOverflow = HorizontalWrapMode.Wrap;
+            lessonStatus = NeonUi.Label("Status", card.transform, Font, 23, NeonPalette.Muted, TextAnchor.UpperLeft);
+            lessonStatus.rectTransform.Place(new Vector2(0, 1), new Vector2(0, 1), new Vector2(36, -316), new Vector2(990, 44));
+            lessonRoot.gameObject.SetActive(false);
+
             // Technical pause.
             lostRoot = NeonUi.Node("Input lost", root).Stretch();
             var dim = NeonUi.Panel("Dim", lostRoot, new Color(0, 0, 0, .72f), NeonArt.White); dim.type = Image.Type.Simple; dim.rectTransform.Stretch();
@@ -141,6 +173,7 @@ namespace Biopulse.Neon
             var rp = NeonUi.Panel("Panel", resultsRoot, NeonPalette.Panel);
             rp.rectTransform.Place(new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, 90), new Vector2(980, 620));
             var rTitle = NeonUi.Label("Title", rp.transform, Font, 64, NeonPalette.Gold, TextAnchor.MiddleCenter, "ПОБЕГ УДАЛСЯ!");
+            resultsTitle = rTitle;
             rTitle.rectTransform.Place(new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -30), new Vector2(900, 90));
             rTitle.Glow(NeonPalette.Alpha(NeonPalette.Extend, .7f), 4);
             resultsStats = NeonUi.Label("Stats", rp.transform, Font, 32, NeonPalette.Text, TextAnchor.UpperLeft);
@@ -162,6 +195,52 @@ namespace Biopulse.Neon
         }
 
         // ---------- API used by the session ----------
+        public void ShowLesson(NeonLessonKind kind, int number, int total)
+        {
+            lessonRoot.gameObject.SetActive(true); lessonGroup.alpha = 0;
+            lessonNumber.text = $"ОБУЧЕНИЕ {number} / {total}    ·    ИГРА НА ПАУЗЕ";
+            string title, body, action;
+            switch (kind)
+            {
+                case NeonLessonKind.LowJump:
+                    title = "НИЗКИЙ ПРЫЖОК";
+                    body = "Впереди низкий ящик. Канал Р отвечает за прыжок.\nСлабое усилие — низкая дуга, сильное — высокая.";
+                    action = "Слабо активируйте Р. Клавиатура: 1, затем P или R."; break;
+                case NeonLessonKind.MidJump:
+                    title = "ПРЫЖОК ВЫШЕ";
+                    body = "Два ящика выше прежнего препятствия. Увеличьте усилие Р.\nПосле прыжка отпустите канал и дождитесь посадки.";
+                    action = "Среднее усилие Р. Клавиатура: 2, затем P или R."; break;
+                case NeonLessonKind.HighJump:
+                    title = "ВЫСОКИЙ ПРЫЖОК";
+                    body = "Три ящика требуют высокого прыжка.\nСильнее активируйте Р; повторного прыжка в воздухе нет.";
+                    action = "Сильное усилие Р. Клавиатура: 3, затем P или R."; break;
+                case NeonLessonKind.Gap:
+                    title = "ПЕРЕПРЫГНИТЕ ПРОПАСТЬ";
+                    body = "Впереди разрыв пола. Прыгните сейчас, пока есть опора.\nУсилие Р определяет высоту и дальность полёта.";
+                    action = "Среднее или сильное Р. Клавиатура: 2, затем P или R."; break;
+                case NeonLessonKind.Grab:
+                    title = "ХВАТ ЗА ВИСЯЩИЙ ОБЪЕКТ";
+                    body = "С направляет руку к подвесной цели впереди.\nЧем сильнее усилие, тем дальше дотянется рука.";
+                    action = "Сильно активируйте С. Клавиатура: 3, затем F."; break;
+                case NeonLessonKind.RestInGrab:
+                    title = "ХВАТ ДЕРЖИТСЯ САМ";
+                    body = "Рука зацепилась. Отпустите оба канала — связь сохранится.\nМожно расслабить мышцы, не отпуская объект.";
+                    action = "Оставайтесь в покое 0,75 секунды."; break;
+                case NeonLessonKind.Release:
+                    title = "ОТПУСТИТЕ И ЛЕТИТЕ";
+                    body = "Вы раскачались вперёд. Р в висе отпускает руку.\nСкорость раскачивания перенесёт вас на другую сторону.";
+                    action = "Активируйте Р. Клавиатура: P или R."; break;
+                default:
+                    title = "ВЗЛОМ ТЕРМИНАЛА";
+                    body = "Ворота закрыты. Сначала покой, затем удерживайте С + Р\nвместе 0,5 секунды. После открытия отпустите оба канала.";
+                    action = "Клавиатура: удерживайте F + P (или F + R)."; break;
+            }
+            lessonTitle.text = title; lessonBody.text = body; lessonAction.text = action;
+            lessonStatus.text = "Сначала отпустите оба канала.";
+        }
+        public void SetLessonStatus(string status) { if (lessonStatus != null) lessonStatus.text = status; }
+        public void HideLesson() { if (lessonRoot != null) lessonRoot.gameObject.SetActive(false); }
+
         public void Say(Transform target, string text, Color color, Vector2 offset, float seconds)
         {
             Bubble b = null;
@@ -203,13 +282,36 @@ namespace Biopulse.Neon
         public void ShowResults(NeonLevelSession s)
         {
             resultsRoot.gameObject.SetActive(true);
+            if (s.IsTutorial)
+            {
+                resultsTitle.text = "ОБУЧЕНИЕ ПРОЙДЕНО!";
+                resultsStats.text = "<color=#26F2FF>Все механики освоены</color>\n\n" +
+                    "Прыжки разной высоты и пропасти\nЗахват, покой в висе и отпускание\nВзлом терминала через С + Р\n\n<size=26>Далее — побег из подземной лаборатории.</size>";
+                resultLabels[0].text = "УРОВЕНЬ 1"; resultLabels[1].text = "ПОВТОРИТЬ";
+                RefreshResults(); return;
+            }
+            if (s.IsEndless)
+            {
+                resultsTitle.text = "ЗАБЕГ ЗАВЕРШЁН";
+                resultsStats.text =
+                    $"Дистанция       <color=#FFFFFF>{s.Distance:0} м</color>\n" +
+                    $"Рекорд           <color=#FFC72E>{NeonProgress.BestEndlessDistance:0} м</color>\n" +
+                    $"Очки             <color=#FFFFFF>{s.Score}</color>   <size=24>рекорд {NeonProgress.BestEndlessScore}</size>\n" +
+                    $"Время            <color=#FFFFFF>{(int)s.ElapsedSeconds / 60}:{(int)s.ElapsedSeconds % 60:00}</color>\n" +
+                    $"Монеты           <color=#FFC72E>{s.CoinsCollected}</color>   <size=24>всего {NeonProgress.TotalCoins}</size>";
+                resultLabels[0].text = "ЗАНОВО";
+                resultLabels[1].text = "В МЕНЮ";
+                RefreshResults();
+                return;
+            }
             int best = NeonProgress.Best(s.LevelNumber);
             int minutes = (int)(s.ElapsedSeconds / 60), seconds = (int)(s.ElapsedSeconds % 60);
             resultsStats.text =
                 $"Время            <color=#FFFFFF>{minutes}:{seconds:00}</color>\n" +
                 $"Очки             <color=#FFC72E>{s.Score}</color>   <size=24><color=#8C99B8>рекорд {best}</color></size>\n" +
                 $"Повторы          <color=#FFFFFF>{s.Deaths}</color>\n" +
-                $"ЭМГ-тайминг      <color=#26F2FF>{s.TimingShare * 100:0}%</color> <size=22><color=#8C99B8>активного времени</color></size>";
+                $"ЭМГ-тайминг      <color=#26F2FF>{s.TimingShare * 100:0}%</color> <size=22><color=#8C99B8>активного времени</color></size>\n" +
+                $"Монеты           <color=#FFC72E>{s.CoinsCollected}</color>   <size=24>всего {NeonProgress.TotalCoins}</size>";
             resultLabels[0].text = string.IsNullOrEmpty(s.NextScene) ? "В НАЧАЛО" : "ДАЛЕЕ";
             RefreshResults();
         }
@@ -231,6 +333,7 @@ namespace Biopulse.Neon
         {
             if (Session == null) return;
             float dt = Time.unscaledDeltaTime;
+            if (lessonRoot.gameObject.activeSelf) lessonGroup.alpha = Mathf.MoveTowards(lessonGroup.alpha, 1, dt * 5);
             float k = canvas.scaleFactor > 0 ? canvas.scaleFactor : 1;
             var input = Session.Input;
             var pipeline = input != null ? input.Pipeline : null;
@@ -243,6 +346,15 @@ namespace Biopulse.Neon
             if (input != null && Session.Cam != null) Session.Cam.BottomReserve = input.TouchZone(true).yMax / Mathf.Max(1, Screen.height);
 
             levelLabel.text = $"<color=#26F2FF>УРОВЕНЬ {Session.LevelNumber}</color>  ·  {Session.Title}";
+            if (Session.IsTutorial) levelLabel.text = "<color=#26F2FF>ОБУЧЕНИЕ</color>  ·  УЧЕБНЫЙ БЛОК";
+            progressChaser.gameObject.SetActive(Session.Chaser != null);
+            progressTrack.gameObject.SetActive(!Session.IsEndless);
+            distanceText.gameObject.SetActive(Session.IsEndless);
+            if (Session.IsEndless)
+            {
+                levelLabel.text = "<color=#26F2FF>КРЫШИ</color>  ·  БЕСКОНЕЧНЫЙ ЗАБЕГ";
+                distanceText.text = $"{Session.Distance:0} м   ·   рекорд {NeonProgress.BestEndlessDistance:0} м";
+            }
             float w = progressTrack.rect.width;
             progressRunner.anchoredPosition = new Vector2(Session.Progress * w, 0);
             if (Session.Chaser != null)
@@ -250,6 +362,7 @@ namespace Biopulse.Neon
 
             scoreText.text = Session.Score.ToString("N0").Replace(',', ' ');
             comboText.text = Session.Combo >= 2 ? $"КОМБО x{Session.Combo}" : "";
+            coinText.text = $"МОНЕТЫ  {Session.CoinsCollected}";
 
             UpdateHint(atLock, grabbed, dt);
             UpdateLockRing(k);
@@ -280,7 +393,7 @@ namespace Biopulse.Neon
         {
             string hint = "";
             var s = Session;
-            if (s.State == NeonSessionState.Playing)
+            if (s.State == NeonSessionState.Playing && !s.TutorialPaused)
             {
                 if (atLock)
                 {

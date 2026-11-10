@@ -30,6 +30,7 @@ namespace Biopulse.Calibration
         private string Signature => input.Source.Info.Id + "|" + input.Source.Info.Representation + "|" + input.Source.Info.Units + "|" + input.SettingsSignature;
         public SetupStage Stage { get; private set; }
         public TutorialSession Tutorial => tutorial;
+        public string TutorialScene = "Neon_Tutorial";
         public EmgInputDriver Input => input;
         public CalibrationSession Recording => recording;
         public double RestDuration => double.IsNaN(restSince) ? 0 : input.Pipeline.Frame.TimeSeconds - restSince;
@@ -161,6 +162,11 @@ namespace Biopulse.Calibration
         }
         private void StartTutorial()
         {
+            if (!string.IsNullOrEmpty(TutorialScene))
+            {
+                SceneManager.LoadScene(TutorialScene);
+                return;
+            }
             tutorial = new TutorialSession(); Stage = SetupStage.Tutorial;
             runner.ResetTo(new Vector2(0,.82f)); runner.RunSpeed = 0; SetGameplay(true);
             EnterTutorialStep(tutorial.Step);

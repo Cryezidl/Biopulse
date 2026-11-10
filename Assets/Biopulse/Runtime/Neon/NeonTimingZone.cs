@@ -17,6 +17,7 @@ namespace Biopulse.Neon
         public float RightEdge => (box != null ? box : box = GetComponent<BoxCollider2D>()).bounds.max.x;
         private void OnTriggerEnter2D(Collider2D other)
         { if (RunnerLookup.From(other) != null) NeonLevelSession.Current?.EnterZone(this); }
+        private void OnDisable() { NeonLevelSession.Current?.ForgetZone(this); }
         private void OnTriggerExit2D(Collider2D other)
         {
             var runner = RunnerLookup.From(other);
